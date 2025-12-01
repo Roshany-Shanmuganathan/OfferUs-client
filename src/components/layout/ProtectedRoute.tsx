@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -17,29 +17,42 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple redirects
+    if (hasRedirected.current) return;
     if (loading) return;
 
     if (!isAuthenticated || !user) {
-      router.push('/');
+      if (pathname !== '/') {
+        hasRedirected.current = true;
+        router.push('/');
+      }
       return;
     }
 
     // Check role restrictions
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-      router.push('/');
+      if (pathname !== '/') {
+        hasRedirected.current = true;
+        router.push('/');
+      }
       return;
     }
 
     // Check if partner is approved
     if (requireApproved && user.role === 'partner') {
       if (user.partner?.status !== 'approved') {
-        router.push('/');
+        if (pathname !== '/') {
+          hasRedirected.current = true;
+          router.push('/');
+        }
         return;
       }
     }
-  }, [user, loading, isAuthenticated, allowedRoles, requireApproved, router]);
+  }, [user, loading, isAuthenticated, allowedRoles, requireApproved, router, pathname]);
 
   if (loading) {
     return (

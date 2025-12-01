@@ -2,8 +2,13 @@ import axios, { AxiosError } from "axios";
 
 // Get API base URL from environment variable
 // Next.js requires NEXT_PUBLIC_ prefix for client-side environment variables
-const API_BASE_URL =
+// Example: NEXT_PUBLIC_API_URL=https://offer-us-api.vercel.app/api
+// Make sure the URL includes the protocol (http:// or https://) and ends with /api
+let API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+// Normalize the URL - remove trailing slashes
+API_BASE_URL = API_BASE_URL.trim().replace(/\/+$/, "");
 
 // Create axios instance
 const api = axios.create({
@@ -58,11 +63,9 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      // Token expired or invalid - redirect to home
-      // Cookie will be cleared by backend on logout
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
-      }
+      // Token expired or invalid - don't redirect automatically
+      // Let components handle auth failures gracefully to prevent redirect loops
+      // The AuthContext will handle setting user to null
     }
 
     if (error.response?.status === 404) {

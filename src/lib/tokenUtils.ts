@@ -9,13 +9,22 @@
  */
 
 /**
+ * Get normalized API base URL
+ * Removes trailing slashes for consistent URL construction
+ */
+function getApiBaseUrl(): string {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  return url.trim().replace(/\/+$/, '');
+}
+
+/**
  * Check if user is authenticated
  * Makes an API call to verify the token is valid
  * @returns Promise<boolean> - true if authenticated, false otherwise
  */
 export async function isAuthenticated(): Promise<boolean> {
   try {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const API_BASE_URL = getApiBaseUrl();
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
       method: 'GET',
       credentials: 'include', // Include cookies
@@ -37,7 +46,7 @@ export async function isAuthenticated(): Promise<boolean> {
  */
 export async function clearToken(): Promise<void> {
   try {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const API_BASE_URL = getApiBaseUrl();
     await fetch(`${API_BASE_URL}/auth/logout`, {
       method: 'POST',
       credentials: 'include', // Include cookies
@@ -59,7 +68,7 @@ export async function clearToken(): Promise<void> {
  */
 export async function getAuthStatus(): Promise<{ user: any } | null> {
   try {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const API_BASE_URL = getApiBaseUrl();
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
       method: 'GET',
       credentials: 'include', // Include cookies

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface PublicRouteProps {
@@ -11,34 +11,39 @@ interface PublicRouteProps {
 export function PublicRoute({ children }: PublicRouteProps) {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple redirects
+    if (hasRedirected.current) return;
     if (loading) return;
 
     // If user is authenticated, redirect to their portal
     if (isAuthenticated && user) {
       if (user.role === 'admin') {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/admin';
+        if (pathname !== '/admin') {
+          hasRedirected.current = true;
+          router.push('/admin');
         }
         return;
       } else if (user.role === 'partner') {
         // Only redirect if partner is approved
-        if (user.partner?.status === 'approved') {
-          if (typeof window !== 'undefined') {
-            window.location.href = '/partner';
-          }
+        if (user.partner?.status === 'approved' && pathname !== '/partner') {
+          hasRedirected.current = true;
+          router.push('/partner');
           return;
         }
         // If partner is not approved, they can still view public pages
       } else if (user.role === 'member') {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/member';
+        if (pathname !== '/member') {
+          hasRedirected.current = true;
+          router.push('/member');
         }
         return;
       }
     }
-  }, [user, loading, isAuthenticated, router]);
+  }, [user, loading, isAuthenticated, router, pathname]);
 
   if (loading) {
     return (

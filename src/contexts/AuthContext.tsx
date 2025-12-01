@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { authAPI, type User, type Partner, type Member, type AuthResponse } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -21,8 +21,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<(User & { partner?: Partner; member?: Member }) | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const isFetchingRef = useRef(false);
 
   const refreshUser = useCallback(async () => {
+    // Prevent multiple simultaneous auth checks
+    if (isFetchingRef.current) {
+      return;
+    }
+    
+    isFetchingRef.current = true;
     try {
       // Token is stored in HTTP-only cookie, automatically sent with request
       const response = await authAPI.getMe();
@@ -35,14 +42,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(null);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Silently handle auth errors - user is not authenticated
+      // Don't redirect here to prevent loops
       setUser(null);
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
   }, []);
 
   useEffect(() => {
+    // Only run once on mount
     refreshUser();
   }, [refreshUser]);
 
