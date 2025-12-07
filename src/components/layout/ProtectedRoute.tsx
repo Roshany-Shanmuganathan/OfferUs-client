@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { LoginModal } from "@/components/auth/LoginModal";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('admin' | 'partner' | 'member')[];
+  allowedRoles?: ("admin" | "partner" | "member")[];
   requireApproved?: boolean;
 }
 
@@ -17,42 +18,29 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  const hasRedirected = useRef(false);
 
   useEffect(() => {
-    // Prevent multiple redirects
-    if (hasRedirected.current) return;
+    // Skip if still loading
     if (loading) return;
 
-    if (!isAuthenticated || !user) {
-      if (pathname !== '/') {
-        hasRedirected.current = true;
-        router.push('/');
-      }
-      return;
-    }
-
-    // Check role restrictions
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
-      if (pathname !== '/') {
-        hasRedirected.current = true;
-        router.push('/');
-      }
-      return;
-    }
-
-    // Check if partner is approved
-    if (requireApproved && user.role === 'partner') {
-      if (user.partner?.status !== 'approved') {
-        if (pathname !== '/') {
-          hasRedirected.current = true;
-          router.push('/');
-        }
+    // If user is authenticated, check role and approval requirements
+    if (isAuthenticated && user) {
+      // Check role restrictions
+      if (allowedRoles && !allowedRoles.includes(user.role)) {
+        router.push("/");
         return;
       }
+
+      // Check if partner is approved
+      if (requireApproved && user.role === "partner") {
+        if (user.partner?.status !== "approved") {
+          router.push("/");
+          return;
+        }
+      }
     }
-  }, [user, loading, isAuthenticated, allowedRoles, requireApproved, router, pathname]);
+    // If not authenticated, the modal will be shown in render (no state update needed)
+  }, [user, loading, isAuthenticated, allowedRoles, requireApproved, router]);
 
   if (loading) {
     return (
@@ -65,18 +53,46 @@ export function ProtectedRoute({
     );
   }
 
-  if (!isAuthenticated || !user) {
+  // Show login modal if not authenticated
+  // Derive modal state from authentication state instead of managing it separately
+  const shouldShowLoginModal = !loading && (!isAuthenticated || !user);
+
+  if (shouldShowLoginModal) {
+    return (
+      <>
+        <LoginModal
+          open={true}
+          onOpenChange={open => {
+            // If user tries to close modal without logging in, redirect to home
+            if (!open && !isAuthenticated) {
+              router.push("/");
+            }
+          }}
+        />
+        {null}
+      </>
+    );
+  }
+
+  // At this point, user must be authenticated and not null
+  // Add explicit null check for TypeScript
+  if (!user) {
     return null;
   }
 
+  // Don't render if role doesn't match
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return null;
   }
 
-  if (requireApproved && user.role === 'partner' && user.partner?.status !== 'approved') {
+  // Don't render if partner is not approved when required
+  if (
+    requireApproved &&
+    user.role === "partner" &&
+    user.partner?.status !== "approved"
+  ) {
     return null;
   }
 
   return <>{children}</>;
 }
-
