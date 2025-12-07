@@ -278,3 +278,35 @@ export interface PartnerAnalytics {
 export interface PartnerAnalyticsResponse {
   analytics: PartnerAnalytics;
 }
+
+// Admin Analytics Types
+export interface AdminAnalytics {
+  users: {
+    total: number;
+    members: number;
+    partners: number;
+    active: number;
+  };
+  partners: {
+    total: number;
+    approved: number;
+    pending: number;
+    rejected: number;
+  };
+  offers: {
+    total: number;
+    active: number;
+    expired: number;
+    views: number;
+    clicks: number;
+    redemptions: number;
+  };
+  reviews: {
+    total: number;
+    averageRating: number;
+  };
+}
+
+export interface AdminAnalyticsResponse {
+  analytics: AdminAnalytics;
+}
