@@ -25,7 +25,9 @@ import {
   Settings,
   LogOut,
   Tag,
+  Bell,
 } from 'lucide-react';
+import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -61,6 +63,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       title: 'Analytics',
       icon: BarChart3,
       href: '/admin/analytics',
+    },
+    {
+      title: 'Notifications',
+      icon: Bell,
+      href: '/admin/notifications',
     },
     {
       title: 'Settings',
@@ -110,7 +117,19 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </SidebarFooter>
           </Sidebar>
           <SidebarInset>
-            <main className="flex-1 p-8">{children}</main>
+            <div className="flex flex-col h-full">
+              <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="flex h-14 items-center justify-between px-6">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-lg font-semibold">Admin Portal</h2>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <AdminNotificationBell />
+                  </div>
+                </div>
+              </header>
+              <main className="flex-1 overflow-auto p-8">{children}</main>
+            </div>
           </SidebarInset>
         </div>
       </SidebarProvider>
