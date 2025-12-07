@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
-import { partnerAPI, type Partner } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { AdminLayout } from "@/components/layout/AdminLayout";
+import type { Partner, ApiError } from "@/types";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -11,8 +11,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,12 +22,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { partnerService } from "@/services/partner.service";
 
 export default function PartnerApprovalsPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -37,21 +38,22 @@ export default function PartnerApprovalsPage() {
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [rejectReason, setRejectReason] = useState("");
   const [processing, setProcessing] = useState(false);
 
   const fetchPartners = async () => {
     setLoading(true);
     try {
-      const response = await partnerAPI.getPending(page, 10);
+      const response = await partnerService.getPending(page, 10);
       if (response.success) {
         setPartners(response.data.partners);
         setTotalPages(response.data.pagination.totalPages);
       } else {
-        toast.error('Failed to fetch pending partners');
+        toast.error("Failed to fetch pending partners");
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch pending partners');
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      toast.error(apiError.message || "Failed to fetch pending partners");
     } finally {
       setLoading(false);
     }
@@ -66,17 +68,18 @@ export default function PartnerApprovalsPage() {
 
     setProcessing(true);
     try {
-      const response = await partnerAPI.approve(selectedPartner._id);
+      const response = await partnerService.approve(selectedPartner._id);
       if (response.success) {
-        toast.success('Partner approved successfully!');
+        toast.success("Partner approved successfully!");
         setApproveDialogOpen(false);
         setSelectedPartner(null);
         fetchPartners();
       } else {
-        toast.error('Failed to approve partner');
+        toast.error("Failed to approve partner");
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to approve partner');
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      toast.error(apiError.message || "Failed to approve partner");
     } finally {
       setProcessing(false);
     }
@@ -87,21 +90,22 @@ export default function PartnerApprovalsPage() {
 
     setProcessing(true);
     try {
-      const response = await partnerAPI.reject(
+      const response = await partnerService.reject(
         selectedPartner._id,
         rejectReason || undefined
       );
       if (response.success) {
-        toast.success('Partner rejected successfully!');
+        toast.success("Partner rejected successfully!");
         setRejectDialogOpen(false);
         setSelectedPartner(null);
-        setRejectReason('');
+        setRejectReason("");
         fetchPartners();
       } else {
-        toast.error('Failed to reject partner');
+        toast.error("Failed to reject partner");
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to reject partner');
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      toast.error(apiError.message || "Failed to reject partner");
     } finally {
       setProcessing(false);
     }
@@ -119,12 +123,33 @@ export default function PartnerApprovalsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pending</Badge>;
-      case 'approved':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Approved</Badge>;
-      case 'rejected':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Rejected</Badge>;
+      case "pending":
+        return (
+          <Badge
+            variant="outline"
+            className="bg-yellow-50 text-yellow-700 border-yellow-200"
+          >
+            Pending
+          </Badge>
+        );
+      case "approved":
+        return (
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 border-green-200"
+          >
+            Approved
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge
+            variant="outline"
+            className="bg-red-50 text-red-700 border-red-200"
+          >
+            Rejected
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -165,7 +190,7 @@ export default function PartnerApprovalsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {partners.map((partner) => (
+                  {partners.map(partner => (
                     <TableRow key={partner._id}>
                       <TableCell className="font-medium">
                         {partner.partnerName}
@@ -210,7 +235,7 @@ export default function PartnerApprovalsPage() {
                             size="sm"
                             variant="default"
                             onClick={() => openApproveDialog(partner)}
-                            disabled={partner.status !== 'pending'}
+                            disabled={partner.status !== "pending"}
                           >
                             <CheckCircle2 className="h-4 w-4 mr-1" />
                             Approve
@@ -219,7 +244,7 @@ export default function PartnerApprovalsPage() {
                             size="sm"
                             variant="destructive"
                             onClick={() => openRejectDialog(partner)}
-                            disabled={partner.status !== 'pending'}
+                            disabled={partner.status !== "pending"}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
                             Reject
@@ -236,7 +261,7 @@ export default function PartnerApprovalsPage() {
               <div className="flex items-center justify-center gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
                   Previous
@@ -246,7 +271,7 @@ export default function PartnerApprovalsPage() {
                 </span>
                 <Button
                   variant="outline"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                 >
                   Next
@@ -257,18 +282,23 @@ export default function PartnerApprovalsPage() {
         )}
 
         {/* Approve Dialog */}
-        <AlertDialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+        <AlertDialog
+          open={approveDialogOpen}
+          onOpenChange={setApproveDialogOpen}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Approve Partner Registration?</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to approve{' '}
+                Are you sure you want to approve{" "}
                 <strong>{selectedPartner?.partnerName}</strong>? They will be
                 able to login after approval.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={processing}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={processing}>
+                Cancel
+              </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleApprove}
                 disabled={processing}
@@ -280,7 +310,7 @@ export default function PartnerApprovalsPage() {
                     Approving...
                   </>
                 ) : (
-                  'Approve'
+                  "Approve"
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -293,7 +323,7 @@ export default function PartnerApprovalsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Reject Partner Registration?</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to reject{' '}
+                Are you sure you want to reject{" "}
                 <strong>{selectedPartner?.partnerName}</strong>? You can provide
                 a reason below.
               </AlertDialogDescription>
@@ -305,7 +335,7 @@ export default function PartnerApprovalsPage() {
                   id="rejectReason"
                   placeholder="Enter reason for rejection..."
                   value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
+                  onChange={e => setRejectReason(e.target.value)}
                   disabled={processing}
                   rows={4}
                 />
@@ -314,7 +344,7 @@ export default function PartnerApprovalsPage() {
             <AlertDialogFooter>
               <AlertDialogCancel
                 disabled={processing}
-                onClick={() => setRejectReason('')}
+                onClick={() => setRejectReason("")}
               >
                 Cancel
               </AlertDialogCancel>
@@ -329,7 +359,7 @@ export default function PartnerApprovalsPage() {
                     Rejecting...
                   </>
                 ) : (
-                  'Reject'
+                  "Reject"
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -339,4 +369,3 @@ export default function PartnerApprovalsPage() {
     </AdminLayout>
   );
 }
-
