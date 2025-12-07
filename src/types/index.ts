@@ -30,6 +30,7 @@ export interface User {
   _id: string;
   email: string;
   role: "admin" | "partner" | "member";
+  isActive?: boolean;
   createdAt: string;
 }
 
