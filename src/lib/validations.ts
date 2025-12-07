@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
-// Sri Lankan districts
-export const SRI_LANKAN_DISTRICTS = [
+// ============================================================================
+// Sri Lankan Districts
+// ============================================================================
+
+const SRI_LANKAN_DISTRICTS_TUPLE = [
   'Ampara',
   'Anuradhapura',
   'Badulla',
@@ -27,25 +30,37 @@ export const SRI_LANKAN_DISTRICTS = [
   'Ratnapura',
   'Trincomalee',
   'Vavuniya',
-] as const;
+] as [string, ...string[]];
 
-// Login schema
+export const SRI_LANKAN_DISTRICTS = SRI_LANKAN_DISTRICTS_TUPLE;
+
+export type SriLankanDistrict = (typeof SRI_LANKAN_DISTRICTS)[number];
+
+// ============================================================================
+// Login Schema
+// ============================================================================
+
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-// Member registration schema
+export type LoginFormData = z.infer<typeof loginSchema>;
+
+// ============================================================================
+// Member Registration Schema
+// ============================================================================
+
 export const memberRegisterSchema = z
   .object({
-    email: z.string().email('Invalid email address'),
+    email: z.string().email('Please enter a valid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     firstName: z.string().min(1, 'First name is required'),
     lastName: z.string().min(1, 'Last name is required'),
     mobileNumber: z
       .string()
-      .regex(/^(\+94|0)?[0-9]{9}$/, 'Invalid mobile number format'),
+      .regex(/^(\+94|0)?[0-9]{9}$/, 'Please enter a valid Sri Lankan mobile number'),
     address: z.string().min(1, 'Address is required'),
     dateOfBirth: z.string().optional(),
     gender: z.enum(['male', 'female', 'other']).optional(),
@@ -55,10 +70,15 @@ export const memberRegisterSchema = z
     path: ['confirmPassword'],
   });
 
-// Partner registration schema
+export type MemberRegisterFormData = z.infer<typeof memberRegisterSchema>;
+
+// ============================================================================
+// Partner Registration Schema
+// ============================================================================
+
 export const partnerRegisterSchema = z
   .object({
-    email: z.string().email('Invalid email address'),
+    email: z.string().email('Please enter a valid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     partnerName: z.string().min(1, 'Partner name is required'),
@@ -66,30 +86,20 @@ export const partnerRegisterSchema = z
     location: z.object({
       street: z.string().min(1, 'Street address is required'),
       city: z.string().min(1, 'City is required'),
-      district: z
-        .string({
-          required_error: 'Please select a district',
-        })
-        .refine(
-          (val) => SRI_LANKAN_DISTRICTS.includes(val as any),
-          {
-            message: 'Please select a valid district',
-          }
-        ),
+      district: z.enum(SRI_LANKAN_DISTRICTS_TUPLE, {
+        message: 'Please select a valid district',
+      }),
       postalCode: z
         .string()
         .regex(/^\d{5}$/, 'Postal code must be 5 digits'),
-      coordinates: z
-        .array(z.number())
-        .length(2)
-        .optional(),
+      coordinates: z.tuple([z.number(), z.number()]).optional(),
     }),
     category: z.string().min(1, 'Category is required'),
     contactInfo: z.object({
       mobileNumber: z
         .string()
-        .regex(/^(\+94|0)?[0-9]{9}$/, 'Invalid mobile number format'),
-      website: z.string().url('Invalid website URL').optional().or(z.literal('')),
+        .regex(/^(\+94|0)?[0-9]{9}$/, 'Please enter a valid Sri Lankan mobile number'),
+      website: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -97,7 +107,4 @@ export const partnerRegisterSchema = z
     path: ['confirmPassword'],
   });
 
-export type LoginFormData = z.infer<typeof loginSchema>;
-export type MemberRegisterFormData = z.infer<typeof memberRegisterSchema>;
 export type PartnerRegisterFormData = z.infer<typeof partnerRegisterSchema>;
-
