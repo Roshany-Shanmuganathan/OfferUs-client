@@ -45,8 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // The browser will automatically send the HTTP-only cookie if it exists
       const response = await authService.getMe();
       if (response.success) {
-        // Store user data in a regular cookie for middleware/role checks
-        Cookies.set("user", JSON.stringify(response.data.user), { 
+        // Store user data with partner/member info in cookie for middleware/role checks
+        const userDataForCookie = {
+          ...response.data.user,
+          partner: response.data.partner,
+          member: response.data.member,
+        };
+        Cookies.set("user", JSON.stringify(userDataForCookie), { 
           expires: 7,
           sameSite: "lax",
           secure: process.env.NODE_ENV === "production"
@@ -62,9 +67,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
     } catch (error) {
-      // Network error or 401 - user is not authenticated
-      Cookies.remove("user");
-      setUser(null);
+      // Check if it's a 401 error (unauthorized) vs network error
+      const apiError = error as ApiError;
+      const hasUserCookie = Cookies.get("user");
+      
+      // Only clear user state if it's a 401 (unauthorized)
+      // If we have a user cookie but get 401, the token might be expired/invalid
+      // If we don't have a user cookie and get 401, user was never logged in
+      if (apiError.response?.status === 401) {
+        // 401 means token is invalid/expired - clear user state
+        Cookies.remove("user");
+        setUser(null);
+      } else if (!hasUserCookie) {
+        // Network error and no user cookie - user is not authenticated
+        setUser(null);
+      }
+      // For network errors with existing user cookie, keep user state
+      // This prevents logout loops when cookies aren't immediately available after login
+      // The ProtectedRoute component will handle showing login modal if authentication is truly needed
     } finally {
       setLoading(false);
     }
@@ -79,8 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await authService.login({ email, password });
       if (response.success) {
         // Backend sets HTTP-only cookie automatically
-        // We only store user data in a regular cookie for middleware/role checks
-        Cookies.set("user", JSON.stringify(response.data.user), { 
+        // Store user data with partner/member info in cookie for middleware/role checks
+        // This is critical for middleware to check partner approval status
+        const userDataForCookie = {
+          ...response.data.user,
+          partner: response.data.partner,
+          member: response.data.member,
+        };
+        Cookies.set("user", JSON.stringify(userDataForCookie), { 
           expires: 7,
           sameSite: "lax",
           secure: process.env.NODE_ENV === "production"

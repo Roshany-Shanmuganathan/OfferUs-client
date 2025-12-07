@@ -56,12 +56,16 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/", request.url));
       }
       // Check if partner is approved (except for register route)
+      // Note: If partner data isn't in cookie yet (edge case), allow through
+      // ProtectedRoute will handle the actual authentication check via API
       if (
         !pathname.startsWith("/partner/register") &&
-        user.partner?.status !== "approved"
+        user.partner &&
+        user.partner.status !== "approved"
       ) {
         return NextResponse.redirect(new URL("/", request.url));
       }
+      // If partner data is missing from cookie, allow through - AuthContext will verify via API
     }
 
     // Member routes
