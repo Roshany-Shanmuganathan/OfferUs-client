@@ -45,6 +45,7 @@ export interface Member {
   address: string;
   dateOfBirth?: string;
   gender?: string;
+  profilePicture?: string;
 }
 
 /**

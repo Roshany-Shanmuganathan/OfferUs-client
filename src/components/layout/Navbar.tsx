@@ -44,6 +44,13 @@ export function Navbar() {
     return '/';
   };
 
+  const getProfilePath = () => {
+    if (user?.role === 'admin') return '/admin/settings';
+    if (user?.role === 'partner') return '/partner/settings';
+    if (user?.role === 'member') return '/member/profile';
+    return '/';
+  };
+
   return (
     <>
       <nav className="border-b bg-background">
@@ -97,7 +104,7 @@ export function Navbar() {
                       <DropdownMenuItem onClick={() => router.push(getRolePath())}>
                         Dashboard
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/profile')}>
+                      <DropdownMenuItem onClick={() => router.push(getProfilePath())}>
                         Profile
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

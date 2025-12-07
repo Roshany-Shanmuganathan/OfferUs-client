@@ -14,13 +14,14 @@ import {
 } from '@/components/ui/select';
 import { memberService } from '@/services/member.service';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Member } from '@/types';
+import { Camera, X } from 'lucide-react';
 
 const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -38,6 +39,9 @@ export default function MemberProfilePage() {
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -66,6 +70,9 @@ export default function MemberProfilePage() {
           dateOfBirth: memberData.dateOfBirth ? new Date(memberData.dateOfBirth).toISOString().split('T')[0] : '',
           gender: (memberData.gender as 'male' | 'female' | 'other' | undefined) || undefined,
         });
+        // Reset image preview when profile is loaded
+        setImagePreview(null);
+        setProfileImage(null);
       }
     } catch (error: any) {
       console.error('Profile fetch error:', error);
@@ -77,6 +84,46 @@ export default function MemberProfilePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size must be less than 5MB');
+        return;
+      }
+      setProfileImage(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const getProfileImageUrl = () => {
+    if (imagePreview) return imagePreview;
+    if (member?.profilePicture) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      return `${apiUrl}${member.profilePicture}`;
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -93,6 +140,7 @@ export default function MemberProfilePage() {
         address: data.address,
         dateOfBirth: data.dateOfBirth || undefined,
         gender: data.gender,
+        profileImage: profileImage || undefined,
       });
 
       if (response.success) {
@@ -148,6 +196,54 @@ export default function MemberProfilePage() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Profile Picture Section */}
+                  <div className="flex flex-col items-center gap-4 pb-6 border-b">
+                    <div className="relative">
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-muted border-4 border-background shadow-lg">
+                        {getProfileImageUrl() ? (
+                          <img
+                            src={getProfileImageUrl()!}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-4xl font-semibold">
+                            {member?.firstName?.[0]?.toUpperCase() || 'M'}
+                            {member?.lastName?.[0]?.toUpperCase() || ''}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors"
+                      >
+                        <Camera className="w-4 h-4" />
+                      </button>
+                      {(imagePreview || member?.profilePicture) && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute top-0 right-0 p-2 bg-destructive text-destructive-foreground rounded-full shadow-lg hover:bg-destructive/90 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium">Profile Picture</p>
+                      <p className="text-xs text-muted-foreground">Click the camera icon to upload</p>
+                      <p className="text-xs text-muted-foreground">Max size: 5MB (JPEG, PNG, GIF, WebP)</p>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </div>
+
                   <div className="grid gap-6 md:grid-cols-2">
                     <FormField
                       control={form.control}

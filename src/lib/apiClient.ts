@@ -15,6 +15,12 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   // Cookies are automatically included by the browser when withCredentials is true
   // No need to manually add Authorization header for HTTP-only cookies
+  
+  // If FormData is being sent, remove Content-Type header to let axios set it with boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+  
   return config;
 });
 
