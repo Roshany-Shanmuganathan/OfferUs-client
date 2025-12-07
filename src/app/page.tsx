@@ -1,10 +1,12 @@
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { PublicRoute } from '@/components/layout/PublicRoute';
+import { LoginTrigger } from '@/components/layout/LoginTrigger';
 import { OfferCard } from '@/components/offers/OfferCard';
 import { Button } from '@/components/ui/button';
 import { fetchOffersServer } from '@/services/offer.service';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 export default async function Home() {
   const offers = await fetchOffersServer(10);
@@ -13,6 +15,9 @@ export default async function Home() {
     <PublicRoute>
       <div className="flex min-h-screen flex-col">
         <Navbar />
+        <Suspense fallback={null}>
+          <LoginTrigger />
+        </Suspense>
         <main className="flex-1">
           <div className="container mx-auto px-4 py-16">
             <div className="mb-12 text-center space-y-6">

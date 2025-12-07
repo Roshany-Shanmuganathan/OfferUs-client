@@ -40,28 +40,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const token = Cookies.get("token");
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
+      // HTTP-only cookies cannot be read by JavaScript
+      // We check authentication by calling the /auth/me endpoint
+      // The browser will automatically send the HTTP-only cookie if it exists
       const response = await authService.getMe();
       if (response.success) {
-        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 }); // Update user cookie
+        // Store user data in a regular cookie for middleware/role checks
+        Cookies.set("user", JSON.stringify(response.data.user), { 
+          expires: 7,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production"
+        });
         setUser({
           ...response.data.user,
           partner: response.data.partner,
           member: response.data.member,
         });
       } else {
-        Cookies.remove("token");
+        // Authentication failed - clear user cookie
         Cookies.remove("user");
         setUser(null);
       }
     } catch (error) {
-      Cookies.remove("token");
+      // Network error or 401 - user is not authenticated
       Cookies.remove("user");
       setUser(null);
     } finally {
@@ -77,8 +78,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authService.login({ email, password });
       if (response.success) {
-        Cookies.set("token", response.data.token, { expires: 7 }); // 7 days expiry
-        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 }); // For middleware role checks
+        // Backend sets HTTP-only cookie automatically
+        // We only store user data in a regular cookie for middleware/role checks
+        Cookies.set("user", JSON.stringify(response.data.user), { 
+          expires: 7,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production"
+        });
 
         setUser({
           ...response.data.user,
@@ -114,14 +120,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      const token = Cookies.get("token");
-      if (token) {
-        await authService.logout();
-      }
+      // Call logout endpoint - backend will clear HTTP-only cookie
+      await authService.logout();
     } catch (error) {
       // Continue with logout even if API call fails
     } finally {
-      Cookies.remove("token");
+      // Clear user cookie (token is HTTP-only and cleared by backend)
       Cookies.remove("user");
       setUser(null);
       router.push("/");
@@ -132,8 +136,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authService.registerMember(data);
       if (response.success) {
-        Cookies.set("token", response.data.token, { expires: 7 }); // 7 days expiry
-        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 }); // For middleware role checks
+        // Backend sets HTTP-only cookie automatically
+        // We only store user data in a regular cookie for middleware/role checks
+        Cookies.set("user", JSON.stringify(response.data.user), { 
+          expires: 7,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production"
+        });
 
         setUser({
           ...response.data.user,
