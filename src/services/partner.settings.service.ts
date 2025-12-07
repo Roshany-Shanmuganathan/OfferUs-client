@@ -47,5 +47,25 @@ export const partnerSettingsService = {
       throw error;
     }
   },
+
+  uploadProfileImage: async (file: File): Promise<ApiResponse<{ partner: Partner }>> => {
+    const formData = new FormData();
+    formData.append('profileImage', file);
+    const response = await apiClient.post<ApiResponse<{ partner: Partner }>>(
+      '/partners/profile/image',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
+
+  deleteProfileImage: async (): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete<ApiResponse<null>>('/partners/profile/image');
+    return response.data;
+  },
 };
 

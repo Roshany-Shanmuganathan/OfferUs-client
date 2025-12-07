@@ -7,6 +7,7 @@ import { SettingsProfileForm } from '@/components/partner/settings/SettingsProfi
 import { SettingsPasswordForm } from '@/components/partner/settings/SettingsPasswordForm';
 import { SettingsNotificationsForm } from '@/components/partner/settings/SettingsNotificationsForm';
 import { SettingsLogoUploader } from '@/components/partner/settings/SettingsLogoUploader';
+import { SettingsProfileImageUploader } from '@/components/partner/settings/SettingsProfileImageUploader';
 import { DangerZoneSection } from '@/components/partner/settings/DangerZoneSection';
 import { partnerSettingsService } from '@/services/partner.settings.service';
 import { partnerOfferService } from '@/services/offer.service';
@@ -125,7 +126,11 @@ export default function PartnerSettingsPage() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="profile" className="mt-6">
+            <TabsContent value="profile" className="mt-6 space-y-6">
+              <SettingsProfileImageUploader
+                partner={partner}
+                onImageUpdate={handleProfileUpdate}
+              />
               <Card>
                 <CardHeader>
                   <CardTitle>Profile Information</CardTitle>

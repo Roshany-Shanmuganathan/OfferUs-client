@@ -73,6 +73,7 @@ export interface Partner {
     website?: string;
   };
   status: "pending" | "approved" | "rejected";
+  profileImage?: string;
   createdAt: string;
 }
 
