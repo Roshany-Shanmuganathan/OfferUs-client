@@ -1,69 +1,85 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { authAPI, type User, type Partner, type Member, type AuthResponse } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import Cookies from "js-cookie";
+import type {
+  User,
+  Partner,
+  Member,
+  UserWithDetails,
+  MemberRegisterRequest,
+  PartnerRegisterRequest,
+  ApiError,
+} from "@/types";
+import { useRouter } from "next/navigation";
+import { authService } from "@/services/auth.service";
 
 interface AuthContextType {
-  user: (User & { partner?: Partner; member?: Member }) | null;
+  user: UserWithDetails | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  registerMember: (data: any) => Promise<void>;
-  registerPartner: (data: any) => Promise<void>;
+  registerMember: (data: MemberRegisterRequest) => Promise<void>;
+  registerPartner: (data: PartnerRegisterRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
-} 
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<(User & { partner?: Partner; member?: Member }) | null>(null);
+  const [user, setUser] = useState<UserWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const isFetchingRef = useRef(false);
 
   const refreshUser = useCallback(async () => {
-    // Prevent multiple simultaneous auth checks
-    if (isFetchingRef.current) {
-      return;
-    }
-    
-    isFetchingRef.current = true;
     try {
-      // Token is stored in HTTP-only cookie, automatically sent with request
-      const response = await authAPI.getMe();
+      const token = Cookies.get("token");
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const response = await authService.getMe();
       if (response.success) {
+        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 }); // Update user cookie
         setUser({
           ...response.data.user,
           partner: response.data.partner,
           member: response.data.member,
         });
       } else {
+        Cookies.remove("token");
+        Cookies.remove("user");
         setUser(null);
       }
-    } catch (error: any) {
-      // Silently handle auth errors - user is not authenticated
-      // Don't redirect here to prevent loops
+    } catch (error) {
+      Cookies.remove("token");
+      Cookies.remove("user");
       setUser(null);
     } finally {
       setLoading(false);
-      isFetchingRef.current = false;
     }
   }, []);
 
   useEffect(() => {
-    // Only run once on mount
     refreshUser();
   }, [refreshUser]);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await authAPI.login({ email, password });
+      const response = await authService.login({ email, password });
       if (response.success) {
-        // Token is stored in HTTP-only cookie by the backend
-        // No need to store in localStorage
-        
+        Cookies.set("token", response.data.token, { expires: 7 }); // 7 days expiry
+        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 }); // For middleware role checks
+
         setUser({
           ...response.data.user,
           partner: response.data.partner,
@@ -71,50 +87,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Redirect based on role - use window.location for immediate navigation
-        if (typeof window !== 'undefined') {
-          if (response.data.user.role === 'admin') {
-            window.location.href = '/admin';
-          } else if (response.data.user.role === 'partner') {
-            window.location.href = '/partner';
-          } else if (response.data.user.role === 'member') {
-            window.location.href = '/member';
+        if (typeof window !== "undefined") {
+          if (response.data.user.role === "admin") {
+            window.location.href = "/admin";
+          } else if (response.data.user.role === "partner") {
+            window.location.href = "/partner";
+          } else if (response.data.user.role === "member") {
+            window.location.href = "/member";
           } else {
-            window.location.href = '/';
+            window.location.href = "/";
           }
         }
       } else {
-        throw new Error(response.message || 'Login failed');
+        throw new Error(response.message || "Login failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Preserve the original error structure so components can access response.data
-      if (error.response) {
+      const apiError = error as ApiError;
+      if (apiError.response) {
         throw error; // Re-throw axios error to preserve response structure
       }
-      const message = error.message || 'Login failed';
+      const message = apiError.message || "Login failed";
       throw new Error(message);
     }
   };
 
   const logout = async () => {
     try {
-      // Call logout API which clears the HTTP-only cookie
-      await authAPI.logout();
+      const token = Cookies.get("token");
+      if (token) {
+        await authService.logout();
+      }
     } catch (error) {
       // Continue with logout even if API call fails
-      // Cookie will be cleared by backend
     } finally {
+      Cookies.remove("token");
+      Cookies.remove("user");
       setUser(null);
-      router.push('/');
+      router.push("/");
     }
   };
 
-  const registerMember = async (data: any) => {
+  const registerMember = async (data: MemberRegisterRequest) => {
     try {
-      const response = await authAPI.registerMember(data);
+      const response = await authService.registerMember(data);
       if (response.success) {
-        // Token is stored in HTTP-only cookie by the backend
-        // No need to store in localStorage
-        
+        Cookies.set("token", response.data.token, { expires: 7 }); // 7 days expiry
+        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 }); // For middleware role checks
+
         setUser({
           ...response.data.user,
           partner: response.data.partner,
@@ -122,37 +142,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Auto-login after member registration
-        if (typeof window !== 'undefined') {
-          window.location.href = '/member';
+        if (typeof window !== "undefined") {
+          window.location.href = "/member";
         }
       } else {
-        throw new Error(response.message || 'Registration failed');
+        throw new Error(response.message || "Registration failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Preserve the original error structure so components can access response.data
-      if (error.response) {
+      const apiError = error as ApiError;
+      if (apiError.response) {
         throw error; // Re-throw axios error to preserve response structure
       }
-      const message = error.message || 'Registration failed';
+      const message = apiError.message || "Registration failed";
       throw new Error(message);
     }
   };
 
-  const registerPartner = async (data: any) => {
+  const registerPartner = async (data: PartnerRegisterRequest) => {
     try {
-      const response = await authAPI.registerPartner(data);
+      const response = await authService.registerPartner(data);
       if (response.success) {
         // Do NOT auto-login for partners
         // They must wait for admin approval
       } else {
-        throw new Error(response.message || 'Registration failed');
+        throw new Error(response.message || "Registration failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Preserve the original error structure so components can access response.data
-      if (error.response) {
+      const apiError = error as ApiError;
+      if (apiError.response) {
         throw error; // Re-throw axios error to preserve response structure
       }
-      const message = error.message || 'Registration failed';
+      const message = apiError.message || "Registration failed";
       throw new Error(message);
     }
   };
@@ -178,8 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
-

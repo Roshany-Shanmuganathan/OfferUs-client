@@ -32,6 +32,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import type { ApiError, PartnerRegisterRequest } from '@/types';
 
 export default function PartnerRegisterPage() {
   const { registerPartner } = useAuth();
@@ -49,7 +50,7 @@ export default function PartnerRegisterPage() {
       location: {
         street: '',
         city: '',
-        district: undefined,
+        district: '',
         postalCode: '',
       },
       category: '',
@@ -68,7 +69,11 @@ export default function PartnerRegisterPage() {
       if (!registerData.contactInfo.website) {
         delete registerData.contactInfo.website;
       }
-      await registerPartner(registerData);
+      // Ensure coordinates is properly typed as tuple if it exists
+      if (registerData.location.coordinates && Array.isArray(registerData.location.coordinates)) {
+        registerData.location.coordinates = registerData.location.coordinates.slice(0, 2) as [number, number];
+      }
+      await registerPartner(registerData as PartnerRegisterRequest);
       toast.success(
         'Registration submitted. Waiting for admin approval.',
         {
@@ -80,26 +85,30 @@ export default function PartnerRegisterPage() {
       setTimeout(() => {
         router.push('/');
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle field-specific errors from API
-      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      const apiError = error as ApiError;
+      if (apiError.response?.data?.errors && Array.isArray(apiError.response.data.errors)) {
         // Set field errors if API returns field-specific errors
-        error.response.data.errors.forEach((err: any) => {
+        apiError.response.data.errors.forEach((err) => {
           if (err.field && err.message) {
             // Handle nested fields like location.street
-            const fieldPath = err.field.includes('.') 
-              ? err.field.split('.') as [string, ...string[]]
-              : err.field as any;
-            form.setError(fieldPath, { message: err.message });
+            if (err.field.includes('.')) {
+              const fieldPath = err.field.split('.') as [string, ...string[]];
+              // Use unknown first for type conversion as TypeScript requires
+              form.setError(fieldPath as unknown as Parameters<typeof form.setError>[0], { message: err.message });
+            } else {
+              form.setError(err.field as keyof PartnerRegisterFormData, { message: err.message });
+            }
           }
         });
         // Only show toast if there's a general message
-        if (error.response.data.message) {
-          toast.error(error.response.data.message);
+        if (apiError.response.data.message) {
+          toast.error(apiError.response.data.message);
         }
       } else {
         // Only show toast for general errors, not field-specific ones
-        const errorMessage = error.response?.data?.message || error.message;
+        const errorMessage = apiError.response?.data?.message || apiError.message;
         if (errorMessage && !errorMessage.includes('validation')) {
           toast.error(errorMessage || 'Registration failed. Please check the form and try again.');
         }
@@ -293,7 +302,7 @@ export default function PartnerRegisterPage() {
                           <FormLabel>District</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            value={field.value}
+                            value={field.value || ''}
                             disabled={isLoading}
                           >
                             <FormControl>

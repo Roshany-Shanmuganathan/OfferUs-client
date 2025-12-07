@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   Form,
-  FormControl, 
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
@@ -34,6 +34,7 @@ import {
 } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { ApiError, PartnerRegisterRequest } from '@/types';
 
 interface PartnerRegisterModalProps {
   open: boolean;
@@ -58,7 +59,7 @@ export function PartnerRegisterModal({
       location: {
         street: '',
         city: '',
-        district: undefined,
+        district: '',
         postalCode: '',
       },
       category: '',
@@ -77,7 +78,11 @@ export function PartnerRegisterModal({
       if (!registerData.contactInfo.website) {
         delete registerData.contactInfo.website;
       }
-      await registerPartner(registerData);
+      // Ensure coordinates is properly typed as tuple if it exists
+      if (registerData.location.coordinates && Array.isArray(registerData.location.coordinates)) {
+        registerData.location.coordinates = registerData.location.coordinates.slice(0, 2) as [number, number];
+      }
+      await registerPartner(registerData as PartnerRegisterRequest);
       toast.success(
         'Registration submitted. Waiting for admin approval.',
         {
@@ -86,27 +91,9 @@ export function PartnerRegisterModal({
       );
       form.reset();
       onOpenChange(false);
-    } catch (error: any) {
-      // Handle network errors
-      if (error.isNetworkError || !error.response) {
-        toast.error(error.message || 'Network error. Please check your connection and ensure the backend server is running.');
-        return;
-      }
-
-      // Handle field-specific errors from API
-      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
-        error.response.data.errors.forEach((err: any) => {
-          if (err.field && err.message) {
-            form.setError(err.field as any, { message: err.message });
-          }
-        });
-        if (error.response.data.message) {
-          toast.error(error.response.data.message);
-        }
-      } else {
-        const errorMessage = error.response?.data?.message || error.message;
-        toast.error(errorMessage || 'Registration failed. Please try again.');
-      }
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      toast.error(apiError.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -277,7 +264,7 @@ export function PartnerRegisterModal({
                       <FormLabel>District</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value}
+                        value={field.value || ''}
                         disabled={isLoading}
                       >
                         <FormControl>

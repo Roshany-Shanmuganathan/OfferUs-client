@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { loginSchema, type LoginFormData } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { ApiError } from '@/types';
 
 interface LoginModalProps {
   open: boolean;
@@ -48,28 +49,23 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       toast.success('Login successful!');
       form.reset();
       onOpenChange(false);
-    } catch (error: any) {
-      // Handle network errors
-      if (error.isNetworkError || !error.response) {
-        toast.error(error.message || 'Network error. Please check your connection and ensure the backend server is running.');
-        return;
-      }
-
+    } catch (error: unknown) {
       // Handle field-specific errors from API
-      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      const apiError = error as ApiError;
+      if (apiError.response?.data?.errors && Array.isArray(apiError.response.data.errors)) {
         // Set field errors if API returns field-specific errors
-        error.response.data.errors.forEach((err: any) => {
+        apiError.response.data.errors.forEach((err) => {
           if (err.field && err.message) {
-            form.setError(err.field as any, { message: err.message });
+            form.setError(err.field as keyof LoginFormData, { message: err.message });
           }
         });
         // Only show toast if there's a general message
-        if (error.response.data.message) {
-          toast.error(error.response.data.message);
+        if (apiError.response.data.message) {
+          toast.error(apiError.response.data.message);
         }
       } else {
         // Only show toast for general errors, not field-specific ones
-        const errorMessage = error.response?.data?.message || error.message;
+        const errorMessage = apiError.response?.data?.message || apiError.message;
         if (errorMessage && !errorMessage.includes('validation')) {
           toast.error(errorMessage || 'Login failed. Please check your credentials.');
         }
@@ -105,7 +101,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                     />
                   </FormControl>
                   <FormMessage />
-                </FormItem> 
+                </FormItem>
               )}
             />
             <FormField

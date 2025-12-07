@@ -14,7 +14,7 @@ import {
   Form,
   FormControl,
   FormField,
-  FormItem, 
+  FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
@@ -33,6 +33,7 @@ import {
 } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { ApiError } from '@/types';
 
 interface MemberRegisterModalProps {
   open: boolean;
@@ -69,28 +70,23 @@ export function MemberRegisterModal({
       toast.success('Registration successful! Welcome!');
       form.reset();
       onOpenChange(false);
-    } catch (error: any) {
-      // Handle network errors
-      if (error.isNetworkError || !error.response) {
-        toast.error(error.message || 'Network error. Please check your connection and ensure the backend server is running.');
-        return;
-      }
-
+    } catch (error: unknown) {
       // Handle field-specific errors from API
-      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      const apiError = error as ApiError;
+      if (apiError.response?.data?.errors && Array.isArray(apiError.response.data.errors)) {
         // Set field errors if API returns field-specific errors
-        error.response.data.errors.forEach((err: any) => {
+        apiError.response.data.errors.forEach((err) => {
           if (err.field && err.message) {
-            form.setError(err.field as any, { message: err.message });
+            form.setError(err.field as keyof MemberRegisterFormData, { message: err.message });
           }
         });
         // Only show toast if there's a general message
-        if (error.response.data.message) {
-          toast.error(error.response.data.message);
+        if (apiError.response.data.message) {
+          toast.error(apiError.response.data.message);
         }
       } else {
         // Only show toast for general errors, not field-specific ones
-        const errorMessage = error.response?.data?.message || error.message;
+        const errorMessage = apiError.response?.data?.message || apiError.message;
         if (errorMessage && !errorMessage.includes('validation')) {
           toast.error(errorMessage || 'Registration failed. Please check the form and try again.');
         }
