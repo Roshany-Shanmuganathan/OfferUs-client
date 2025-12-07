@@ -120,6 +120,11 @@ export default function MemberProfilePage() {
   const getProfileImageUrl = () => {
     if (imagePreview) return imagePreview;
     if (member?.profilePicture) {
+      // Check if it's already a full URL (Cloudinary URL)
+      if (member.profilePicture.startsWith('http://') || member.profilePicture.startsWith('https://')) {
+        return member.profilePicture;
+      }
+      // Otherwise, it's a relative path (legacy local file)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       return `${apiUrl}${member.profilePicture}`;
     }
