@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ImageUploader } from '@/components/ui/image-uploader';
 import {
   Select,
   SelectContent,
@@ -58,6 +59,7 @@ export default function PartnerRegisterPage() {
         mobileNumber: '',
         website: '',
       },
+      profileImage: '',
     },
   });
 
@@ -68,6 +70,10 @@ export default function PartnerRegisterPage() {
       // Clean up empty website
       if (!registerData.contactInfo.website) {
         delete registerData.contactInfo.website;
+      }
+      // Clean up empty profileImage
+      if (!registerData.profileImage) {
+        delete registerData.profileImage;
       }
       // Ensure coordinates is properly typed as tuple if it exists
       if (registerData.location.coordinates && Array.isArray(registerData.location.coordinates)) {
@@ -376,6 +382,27 @@ export default function PartnerRegisterPage() {
                             type="url"
                             placeholder="https://example.com"
                             {...field}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-4 border-t pt-6">
+                  <h3 className="font-semibold text-lg">Profile Image (Optional)</h3>
+                  <FormField
+                    control={form.control}
+                    name="profileImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <ImageUploader
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            folder="partner-profiles"
                             disabled={isLoading}
                           />
                         </FormControl>

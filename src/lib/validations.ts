@@ -64,6 +64,7 @@ export const memberRegisterSchema = z
     address: z.string().min(1, 'Address is required'),
     dateOfBirth: z.string().optional(),
     gender: z.enum(['male', 'female', 'other']).optional(),
+    profilePicture: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -101,6 +102,7 @@ export const partnerRegisterSchema = z
         .regex(/^(\+94|0)?[0-9]{9}$/, 'Please enter a valid Sri Lankan mobile number'),
       website: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
     }),
+    profileImage: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

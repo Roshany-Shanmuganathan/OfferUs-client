@@ -140,7 +140,7 @@ export default function MemberProfilePage() {
         address: data.address,
         dateOfBirth: data.dateOfBirth || undefined,
         gender: data.gender,
-        profileImage: profileImage || undefined,
+        profilePicture: profileImage || undefined,
       });
 
       if (response.success) {

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ImageUploader } from '@/components/ui/image-uploader';
 import {
   Select,
   SelectContent,
@@ -59,6 +60,7 @@ export function MemberRegisterModal({
       address: '',
       dateOfBirth: '',
       gender: undefined,
+      profilePicture: '',
     },
   });
 
@@ -265,6 +267,26 @@ export function MemberRegisterModal({
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="font-semibold">Profile Picture (Optional)</h3>
+              <FormField
+                control={form.control}
+                name="profilePicture"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <ImageUploader
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        folder="member-profiles"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

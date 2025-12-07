@@ -120,6 +120,7 @@ export interface MemberRegisterRequest {
   address: string;
   dateOfBirth?: string;
   gender?: string;
+  profilePicture?: string;
 }
 
 /**
@@ -142,6 +143,7 @@ export interface PartnerRegisterRequest {
     mobileNumber: string;
     website?: string;
   };
+  profileImage?: string;
 }
 
 // ============================================================================

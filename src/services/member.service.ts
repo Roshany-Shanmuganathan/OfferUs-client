@@ -8,7 +8,7 @@ export interface UpdateMemberProfileData {
   address?: string;
   dateOfBirth?: string;
   gender?: string;
-  profileImage?: File;
+  profilePicture?: File;
 }
 
 export const memberService = {
@@ -21,7 +21,7 @@ export const memberService = {
     data: UpdateMemberProfileData
   ): Promise<ApiResponse<{ member: Member }>> => {
     // Check if we have a file to upload
-    const hasFile = !!data.profileImage;
+    const hasFile = !!data.profilePicture;
     
     if (hasFile) {
       // Use FormData for file uploads
@@ -35,8 +35,8 @@ export const memberService = {
       if (data.dateOfBirth !== undefined) formData.append('dateOfBirth', data.dateOfBirth);
       if (data.gender !== undefined) formData.append('gender', data.gender);
       
-      // Add profile image
-      formData.append('profileImage', data.profileImage);
+      // Add profile picture (field name must match backend: 'profilePicture')
+      formData.append('profilePicture', data.profilePicture);
 
       // Content-Type will be set automatically by axios with boundary for FormData
       const response = await apiClient.put<ApiResponse<{ member: Member }>>('/members/profile', formData);

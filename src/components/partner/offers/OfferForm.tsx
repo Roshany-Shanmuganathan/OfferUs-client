@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { ImageUploader } from '@/components/ui/image-uploader';
 import {
   Select,
   SelectContent,
@@ -356,9 +357,14 @@ export function OfferForm({ offer, categories, onSuccess }: OfferFormProps) {
           name="imageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
+              <FormLabel>Offer Image</FormLabel>
               <FormControl>
-                <Input type="url" placeholder="https://example.com/image.jpg" {...field} />
+                <ImageUploader
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  folder="offers"
+                  disabled={isLoading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
