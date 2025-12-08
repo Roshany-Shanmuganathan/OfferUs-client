@@ -12,6 +12,9 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarInset,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import { ProtectedRoute } from './ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,15 +26,30 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Ticket,
+  Bell,
+  HelpCircle,
+  QrCode,
+  History,
+  FileText,
+  MessageSquare,
+  AlertTriangle,
+  ChevronRight,
 } from 'lucide-react';
+import { useState } from 'react';
 
 export function PartnerLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const toggleMenu = (key: string) => {
+    setOpenMenus((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const menuItems = [
@@ -46,16 +64,83 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
       href: '/partner/offers',
     },
     {
+      title: 'Redemptions',
+      icon: Ticket,
+      href: '/partner/redemptions',
+      hasSubmenu: true,
+      children: [
+        {
+          title: 'Redemption Requests',
+          href: '/partner/redemptions/requests',
+        },
+        {
+          title: 'Redemption History',
+          href: '/partner/redemptions/history',
+        },
+        {
+          title: 'QR Code Scan',
+          href: '/partner/redemptions/scan',
+        },
+      ],
+    },
+    {
       title: 'Analytics',
       icon: BarChart3,
       href: '/partner/analytics',
+    },
+    {
+      title: 'Notifications',
+      icon: Bell,
+      href: '/partner/notifications',
+      hasSubmenu: true,
+      children: [
+        {
+          title: 'System Notifications',
+          href: '/partner/notifications/system',
+        },
+        {
+          title: 'Offers Notifications',
+          href: '/partner/notifications/offers',
+        },
+        {
+          title: 'Alerts',
+          href: '/partner/notifications/alerts',
+        },
+      ],
     },
     {
       title: 'Settings',
       icon: Settings,
       href: '/partner/settings',
     },
+    {
+      title: 'Support',
+      icon: HelpCircle,
+      href: '/partner/support',
+      hasSubmenu: true,
+      children: [
+        {
+          title: 'Help Center',
+          href: '/partner/support/help',
+        },
+        {
+          title: 'FAQs',
+          href: '/partner/support/faqs',
+        },
+        {
+          title: 'Contact Support',
+          href: '/partner/support/contact',
+        },
+      ],
+    },
   ];
+
+  const isActive = (href: string) => {
+    if (href === '/partner') {
+      return pathname === '/partner';
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <ProtectedRoute allowedRoles={['partner']} requireApproved={true}>
@@ -69,19 +154,58 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {menuItems.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={pathname === item.href}
-                        >
-                          <Link href={item.href}>
-                            <item.icon className="mr-2 h-4 w-4" />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
+                    {menuItems.map((item) => {
+                      const isItemActive = isActive(item.href);
+                      const isOpen = openMenus[item.title] ?? false;
+                      const hasChildren = item.hasSubmenu && item.children;
+
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          {hasChildren ? (
+                            <>
+                              <SidebarMenuButton
+                                onClick={() => toggleMenu(item.title)}
+                                isActive={isItemActive}
+                              >
+                                <item.icon className="mr-2 h-4 w-4" />
+                                <span>{item.title}</span>
+                                <ChevronRight
+                                  className={`ml-auto h-4 w-4 transition-transform ${
+                                    isOpen ? 'rotate-90' : ''
+                                  }`}
+                                />
+                              </SidebarMenuButton>
+                              {isOpen && (
+                                <SidebarMenuSub>
+                                  {item.children?.map((child) => (
+                                    <SidebarMenuSubItem key={child.title}>
+                                      <SidebarMenuSubButton
+                                        asChild
+                                        isActive={pathname === child.href}
+                                      >
+                                        <Link href={child.href}>
+                                          <span>{child.title}</span>
+                                        </Link>
+                                      </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                  ))}
+                                </SidebarMenuSub>
+                              )}
+                            </>
+                          ) : (
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isItemActive}
+                            >
+                              <Link href={item.href}>
+                                <item.icon className="mr-2 h-4 w-4" />
+                                <span>{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          )}
+                        </SidebarMenuItem>
+                      );
+                    })}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
