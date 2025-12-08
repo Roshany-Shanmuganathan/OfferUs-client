@@ -16,7 +16,6 @@ import { LoginModal } from '@/components/auth/LoginModal';
 import { MemberRegisterModal } from '@/components/auth/MemberRegisterModal';
 import { User, LogOut, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -43,47 +42,6 @@ export function Navbar() {
     if (user?.role === 'partner') return '/partner';
     if (user?.role === 'member') return '/member';
     return '/';
-  };
-
-  const getProfilePath = () => {
-    if (user?.role === 'admin') return '/admin/settings';
-    if (user?.role === 'partner') return '/partner/settings';
-    if (user?.role === 'member') return '/member/profile';
-    return '/';
-  };
-
-  const getProfileImageUrl = () => {
-    if (user?.member?.profilePicture) {
-      const url = user.member.profilePicture;
-      // Check if it's already a full URL (Cloudinary URL)
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-      }
-      // Otherwise, it's a relative path (legacy local file)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      return `${apiUrl}${url}`;
-    }
-    if (user?.partner?.profileImage) {
-      const url = user.partner.profileImage;
-      // Check if it's already a full URL (Cloudinary URL)
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-      }
-      // Otherwise, it's a relative path (legacy local file)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      return `${apiUrl}${url}`;
-    }
-    return null;
-  };
-
-  const getInitials = () => {
-    if (user?.member) {
-      return `${user.member.firstName?.[0] || ''}${user.member.lastName?.[0] || ''}`.toUpperCase();
-    }
-    if (user?.partner) {
-      return user.partner.partnerName?.[0]?.toUpperCase() || 'P';
-    }
-    return user?.email?.[0]?.toUpperCase() || 'U';
   };
 
   return (
@@ -129,21 +87,7 @@ export function Navbar() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center gap-2">
-                        {getProfileImageUrl() ? (
-                          <div className="relative w-8 h-8 rounded-full overflow-hidden border border-border">
-                            <Image
-                              src={getProfileImageUrl()!}
-                              alt={getDisplayName()}
-                              fill
-                              className="object-cover"
-                              sizes="32px"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
-                            {getInitials()}
-                          </div>
-                        )}
+                        <User className="h-4 w-4" />
                         <span className="hidden sm:inline">{getDisplayName()}</span>
                       </Button>
                     </DropdownMenuTrigger>
@@ -153,7 +97,7 @@ export function Navbar() {
                       <DropdownMenuItem onClick={() => router.push(getRolePath())}>
                         Dashboard
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(getProfilePath())}>
+                      <DropdownMenuItem onClick={() => router.push('/profile')}>
                         Profile
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

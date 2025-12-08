@@ -24,14 +24,8 @@ export function SettingsProfileImageUploader({ partner, onImageUpdate }: Setting
 
   useEffect(() => {
     if (partner?.profileImage) {
-      // Construct full URL for the image
-      // API base URL without /api suffix for static file serving
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL 
-        ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '')
-        : 'http://localhost:5000';
-      const imageUrl = partner.profileImage.startsWith('http')
-        ? partner.profileImage
-        : `${apiBaseUrl}${partner.profileImage}`;
+      // Cloudinary URLs are already full URLs, use them directly
+      const imageUrl = partner.profileImage;
       setCurrentImageUrl(imageUrl);
       setPreview(imageUrl);
     } else {
@@ -73,19 +67,21 @@ export function SettingsProfileImageUploader({ partner, onImageUpdate }: Setting
       const response = await partnerSettingsService.uploadProfileImage(file);
       
       if (response.success && response.data.partner?.profileImage) {
-        // API base URL without /api suffix for static file serving
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL 
-          ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '')
-          : 'http://localhost:5000';
-        const imageUrl = response.data.partner.profileImage.startsWith('http')
-          ? response.data.partner.profileImage
-          : `${apiBaseUrl}${response.data.partner.profileImage}`;
+        // Cloudinary URLs are already full URLs, use them directly
+        const imageUrl = response.data.partner.profileImage;
         setCurrentImageUrl(imageUrl);
         setPreview(imageUrl);
         toast.success('Profile image uploaded successfully');
-        if (onImageUpdate) {
-          onImageUpdate();
+        // Clear file input after successful upload
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
+        // Refresh partner data to ensure consistency
+        if (onImageUpdate) {
+          await onImageUpdate();
+        }
+      } else {
+        toast.error('Failed to upload image. Please try again.');
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to upload profile image';
@@ -140,7 +136,17 @@ export function SettingsProfileImageUploader({ partner, onImageUpdate }: Setting
         <div className="flex items-center gap-6">
           {preview ? (
             <div className="relative w-32 h-32 border rounded-full overflow-hidden bg-muted">
-              <Image src={preview} alt="Profile preview" fill className="object-cover" />
+              <Image 
+                src={preview} 
+                alt="Profile preview" 
+                fill 
+                className="object-cover"
+                unoptimized={preview.startsWith('data:')}
+                onError={() => {
+                  console.error('Failed to load profile image:', preview);
+                  setPreview(null);
+                }}
+              />
             </div>
           ) : (
             <div className="flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-full bg-muted">
