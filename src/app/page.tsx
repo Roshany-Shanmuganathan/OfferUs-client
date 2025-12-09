@@ -3,13 +3,41 @@ import { Footer } from '@/components/layout/Footer';
 import { PublicRoute } from '@/components/layout/PublicRoute';
 import { LoginTrigger } from '@/components/layout/LoginTrigger';
 import { OfferCard } from '@/components/offers/OfferCard';
+import { OfferFilters } from '@/components/offers/OfferFilters';
 import { Button } from '@/components/ui/button';
-import { fetchOffersServer } from '@/services/offer.service';
+import { fetchOffersServer, partnerOfferService } from '@/services/offer.service';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-export default async function Home() {
-  const { offers } = await fetchOffersServer({ limit: 10 });
+interface HomeProps {
+  searchParams: Promise<{
+    search?: string;
+    category?: string;
+    sortBy?: string;
+    page?: string;
+  }>;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const resolvedSearchParams = await searchParams;
+  const page = Number(resolvedSearchParams.page) || 1;
+  
+  const { offers } = await fetchOffersServer({
+    page,
+    limit: 10,
+    search: resolvedSearchParams.search,
+    category: resolvedSearchParams.category,
+    sortBy: resolvedSearchParams.sortBy,
+  });
+
+  // Fetch categories for the filter
+  let categories: string[] = [];
+  try {
+    const categoriesData = await partnerOfferService.getCategories();
+    categories = categoriesData.data.categories;
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+  }
 
   return (
     <PublicRoute>
@@ -28,6 +56,10 @@ export default async function Home() {
                 Your trusted platform for discovering the best offers and deals
                 from verified partners.
               </p>
+            </div>
+
+            <div className="mb-8">
+              <OfferFilters categories={categories} />
             </div>
 
             {offers.length > 0 ? (
@@ -49,7 +81,7 @@ export default async function Home() {
             ) : (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-lg">
-                  No offers available at the moment. Check back later!
+                  No offers found matching your criteria.
                 </p>
               </div>
             )}
