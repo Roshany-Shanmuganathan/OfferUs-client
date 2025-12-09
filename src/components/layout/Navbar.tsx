@@ -16,6 +16,7 @@ import { LoginModal } from '@/components/auth/LoginModal';
 import { MemberRegisterModal } from '@/components/auth/MemberRegisterModal';
 import { User, LogOut, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Avatar } from '@/components/ui/avatar';
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -42,6 +43,22 @@ export function Navbar() {
     if (user?.role === 'partner') return '/partner';
     if (user?.role === 'member') return '/member';
     return '/';
+  };
+
+  const getInitials = () => {
+    if (user?.member) {
+      return `${user.member.firstName.charAt(0)}${user.member.lastName.charAt(0)}`;
+    }
+    if (user?.partner) {
+      return user.partner.partnerName.charAt(0).toUpperCase();
+    }
+    return user?.email?.charAt(0).toUpperCase() || 'U';
+  };
+
+  const getProfileImage = () => {
+    if (user?.member?.profilePicture) return user.member.profilePicture;
+    if (user?.partner?.profileImage) return user.partner.profileImage;
+    return null;
   };
 
   return (
@@ -86,13 +103,25 @@ export function Navbar() {
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span className="hidden sm:inline">{getDisplayName()}</span>
+                      <Button variant="ghost" className="flex items-center gap-2 pl-0 pr-2 rounded-full">
+                        <Avatar
+                          className="h-9 w-9"
+                          src={getProfileImage()}
+                          alt={getDisplayName()}
+                          fallback={getInitials()}
+                        />
+                        <span className="hidden sm:inline font-medium">{getDisplayName()}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{getDisplayName()}</p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            {user?.email}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => router.push(getRolePath())}>
                         Dashboard
@@ -164,4 +193,3 @@ export function Navbar() {
     </>
   );
 }
-

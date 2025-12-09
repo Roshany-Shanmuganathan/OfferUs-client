@@ -1,4 +1,4 @@
-import apiClient from '@/utils/axios';
+import apiClient from '@/lib/apiClient';
 import type { ApiResponse, Member } from '@/types';
 
 export interface UpdateMemberProfileData {
