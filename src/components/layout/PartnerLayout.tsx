@@ -15,6 +15,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarHeader,
 } from '@/components/ui/sidebar';
 import { ProtectedRoute } from './ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,11 +36,12 @@ import {
   MessageSquare,
   AlertTriangle,
   ChevronRight,
+  User,
 } from 'lucide-react';
 import { useState } from 'react';
 
 export function PartnerLayout({ children }: { children: React.ReactNode }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
@@ -147,11 +149,38 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <Sidebar>
+            <SidebarHeader>
+              <div className="flex h-12 items-center px-4">
+                <span className="text-lg font-bold">OfferUs Partner</span>
+              </div>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton size="lg" className="h-auto py-4 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                    <div className="flex flex-col items-center gap-2 w-full">
+                      <div className="flex aspect-square size-16 items-center justify-center rounded-full bg-primary text-primary-foreground overflow-hidden">
+                        {user?.partner?.profileImage ? (
+                          <img 
+                            src={user.partner.profileImage} 
+                            alt={user.partner.partnerName} 
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <User className="size-8" />
+                        )}
+                      </div>
+                      <div className="grid flex-1 text-center text-sm leading-tight">
+                        <span className="truncate font-semibold text-base">
+                          {user?.partner?.partnerName || 'Partner Portal'}
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
+                      </div>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarHeader>
             <SidebarContent>
               <SidebarGroup>
-                <SidebarGroupLabel className="text-lg font-bold">
-                  OfferUs Partner
-                </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {menuItems.map((item) => {
