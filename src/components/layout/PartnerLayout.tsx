@@ -37,6 +37,7 @@ import {
   AlertTriangle,
   ChevronRight,
   User,
+  Star,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -89,6 +90,11 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
       title: 'Analytics',
       icon: BarChart3,
       href: '/partner/analytics',
+    },
+    {
+      title: 'Reviews',
+      icon: Star,
+      href: '/partner/reviews',
     },
     {
       title: 'Notifications',

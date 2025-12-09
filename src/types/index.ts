@@ -247,7 +247,12 @@ export interface Review {
       }
     | string;
   partner: string;
-  offer: string;
+  offer:
+    | {
+        _id: string;
+        title: string;
+      }
+    | string;
   rating: number;
   comment?: string;
   partnerResponse?: string;
