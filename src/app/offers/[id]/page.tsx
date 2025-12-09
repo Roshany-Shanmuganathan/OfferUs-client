@@ -97,10 +97,10 @@ export default async function OfferDetailsPage({ params }: OfferDetailsPageProps
 
                   <div className="flex items-baseline gap-3 mb-4">
                     <span className="text-4xl font-bold text-primary">
-                      ${offer.discountedPrice.toFixed(2)}
+                      Rs. {offer.discountedPrice.toFixed(2)}
                     </span>
                     <span className="text-xl text-muted-foreground line-through">
-                      ${offer.originalPrice.toFixed(2)}
+                      Rs. {offer.originalPrice.toFixed(2)}
                     </span>
                     <Badge variant="secondary" className="text-lg px-3 py-1">
                       {offer.discount}% OFF

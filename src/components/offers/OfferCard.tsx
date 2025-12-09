@@ -54,10 +54,10 @@ export function OfferCard({ offer }: OfferCardProps) {
 
         <div className="mb-3 flex items-baseline gap-2">
           <span className="text-2xl font-bold text-primary">
-            ${offer.discountedPrice.toFixed(2)}
+            Rs. {offer.discountedPrice.toFixed(2)}
           </span>
           <span className="text-sm text-muted-foreground line-through">
-            ${offer.originalPrice.toFixed(2)}
+            Rs. {offer.originalPrice.toFixed(2)}
           </span>
           <span className="text-sm font-medium text-green-600">{offer.discount}% OFF</span>
         </div>

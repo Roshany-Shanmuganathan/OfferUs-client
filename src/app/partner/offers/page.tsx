@@ -198,7 +198,7 @@ export default function PartnerOffersPage() {
                       <TableCell className="font-medium">{offer.title}</TableCell>
                       <TableCell>{offer.discount}%</TableCell>
                       <TableCell>
-                        ${offer.discountedPrice.toFixed(2)} / ${offer.originalPrice.toFixed(2)}
+                        Rs. {offer.discountedPrice.toFixed(2)} / Rs. {offer.originalPrice.toFixed(2)}
                       </TableCell>
                       <TableCell>{formatDate(offer.expiryDate)}</TableCell>
                       <TableCell>

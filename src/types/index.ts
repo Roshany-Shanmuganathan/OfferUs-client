@@ -31,6 +31,7 @@ export interface User {
   email: string;
   role: "admin" | "partner" | "member";
   isActive?: boolean;
+  profileImage?: string;
   createdAt: string;
 }
 

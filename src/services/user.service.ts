@@ -20,6 +20,7 @@ export interface GetUsersParams {
 export interface UpdateUserRequest {
   isActive?: boolean;
   role?: "admin" | "partner" | "member";
+  profileImage?: string;
 }
 
 export const userService = {

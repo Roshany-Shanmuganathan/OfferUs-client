@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Users, Store, Tag, Eye, AlertCircle } from "lucide-react";
 
+import { AdminProfileSection } from "@/components/admin/AdminProfileSection";
+
 export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +37,7 @@ export default function AdminDashboard() {
     return (
       <AdminLayout>
         <div className="space-y-6">
+          <AdminProfileSection />
           <div>
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground mt-2">
@@ -86,6 +89,7 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        <AdminProfileSection pendingApprovals={analytics.partners.pending} />
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground mt-2">
