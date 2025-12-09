@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 export default async function Home() {
-  const offers = await fetchOffersServer(10);
+  const { offers } = await fetchOffersServer({ limit: 10 });
 
   return (
     <PublicRoute>

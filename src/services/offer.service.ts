@@ -38,11 +38,26 @@ export const clickOffer = async (id: string): Promise<void> => {
   await apiClient.post(`/offers/${id}/click`);
 };
 
-export const fetchOffersServer = async (limit: number = 10): Promise<Offer[]> => {
+export const fetchOffersServer = async (options: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  sortBy?: string;
+} = {}): Promise<{ offers: Offer[]; pagination: any }> => {
   try {
+    const { page = 1, limit = 10, search, category, sortBy } = options;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-    const response = await fetch(`${baseUrl}/offers?limit=${limit}`, {
-      next: { revalidate: 60 }, // Revalidate every 60 seconds
+    
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    if (search) params.append('search', search);
+    if (category && category !== 'all') params.append('category', category);
+    if (sortBy) params.append('sortBy', sortBy);
+
+    const response = await fetch(`${baseUrl}/offers?${params.toString()}`, {
+      next: { revalidate: 0 }, // Dynamic data needs 0 revalidation or force-dynamic
     });
 
     if (!response.ok) {
@@ -50,10 +65,13 @@ export const fetchOffersServer = async (limit: number = 10): Promise<Offer[]> =>
     }
 
     const data: ApiResponse<OfferBrowseResponse> = await response.json();
-    return data.data.offers;
+    return {
+      offers: data.data.offers,
+      pagination: data.data.pagination
+    };
   } catch (error) {
     console.error('Error fetching offers:', error);
-    return [];
+    return { offers: [], pagination: null };
   }
 };
 
