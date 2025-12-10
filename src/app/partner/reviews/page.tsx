@@ -107,7 +107,9 @@ export default function PartnerReviewsPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold">
-                          {review.member?.email?.split('@')[0] || 'Anonymous User'}
+                          {typeof review.member === 'object' && review.member?.email 
+                            ? review.member.email.split('@')[0] 
+                            : 'Anonymous User'}
                         </span>
                         <span className="text-xs text-muted-foreground px-2 py-0.5 bg-secondary rounded-full">
                           Verified Purchase

@@ -74,7 +74,7 @@ export interface Partner {
     mobileNumber: string;
     website?: string;
   };
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "banned";
   profileImage?: string;
   createdAt: string;
 }

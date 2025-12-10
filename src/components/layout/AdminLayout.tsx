@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -15,8 +16,8 @@ import {
 } from '@/components/ui/sidebar';
 import { ProtectedRoute } from './ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { AdminNavigationItem } from './AdminNavigationItem';
 import {
   LayoutDashboard,
   UserCheck,
@@ -26,13 +27,13 @@ import {
   LogOut,
   Tag,
   Bell,
+  Store,
 } from 'lucide-react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   const handleLogout = async () => {
     await logout();
@@ -53,6 +54,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       title: 'Users',
       icon: Users,
       href: '/admin/users',
+    },
+    {
+      title: 'Partners',
+      icon: Store,
+      href: '/admin/users?role=partner',
     },
     {
       title: 'Categories',
@@ -88,19 +94,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {menuItems.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={pathname === item.href}
-                        >
-                          <Link href={item.href}>
-                            <item.icon className="mr-2 h-4 w-4" />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
+                    <Suspense fallback={<div>Loading...</div>}>
+                      {menuItems.map((item) => (
+                        <AdminNavigationItem key={item.title} item={item} />
+                      ))}
+                    </Suspense>
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>

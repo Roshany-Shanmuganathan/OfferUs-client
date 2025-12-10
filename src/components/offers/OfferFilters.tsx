@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, X } from 'lucide-react';
+import { Search, X, MapPin } from 'lucide-react';
 
 
 // If useDebounce doesn't exist, I'll implement a simple one inside or use a timeout
@@ -20,15 +20,18 @@ import { Search, X } from 'lucide-react';
 
 interface OfferFiltersProps {
   categories: string[];
+  districts?: string[];
 }
 
-export function OfferFilters({ categories }: OfferFiltersProps) {
+export function OfferFilters({ categories, districts = [] }: OfferFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
+  const [district, setDistrict] = useState(searchParams.get('district') || 'all');
+  const [location, setLocation] = useState(searchParams.get('location') || '');
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'newest');
 
   // Debounce search
@@ -39,6 +42,15 @@ export function OfferFilters({ categories }: OfferFiltersProps) {
 
     return () => clearTimeout(timer);
   }, [search]);
+
+  // Debounce location search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleLocationSearch(location);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [location]);
 
   const createQueryString = (name: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -78,9 +90,27 @@ export function OfferFilters({ categories }: OfferFiltersProps) {
     router.push(`${pathname}?${createQueryString('sortBy', value)}`);
   };
 
+  const handleDistrictChange = (value: string) => {
+    setDistrict(value);
+    router.push(`${pathname}?${createQueryString('district', value)}`);
+  };
+
+  const handleLocationSearch = (term: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (term) {
+      params.set('location', term);
+    } else {
+      params.delete('location');
+    }
+    params.delete('page');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setCategory('all');
+    setDistrict('all');
+    setLocation('');
     setSortBy('newest');
     router.push(pathname);
   };
@@ -112,6 +142,32 @@ export function OfferFilters({ categories }: OfferFiltersProps) {
           </SelectContent>
         </Select>
 
+        <div className="relative">
+          <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search location..."
+            className="pl-9 w-[180px]"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </div>
+
+        {districts.length > 0 && (
+          <Select value={district} onValueChange={handleDistrictChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="District" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Districts</SelectItem>
+              {districts.map((dist) => (
+                <SelectItem key={dist} value={dist}>
+                  {dist}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
         <Select value={sortBy} onValueChange={handleSortChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort By" />
@@ -126,7 +182,7 @@ export function OfferFilters({ categories }: OfferFiltersProps) {
           </SelectContent>
         </Select>
 
-        {(search || category !== 'all' || sortBy !== 'newest') && (
+        {(search || category !== 'all' || district !== 'all' || location || sortBy !== 'newest') && (
           <Button variant="ghost" size="icon" onClick={clearFilters} title="Clear filters">
             <X className="h-4 w-4" />
           </Button>

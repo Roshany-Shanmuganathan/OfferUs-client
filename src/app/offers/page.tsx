@@ -9,6 +9,8 @@ interface OffersPageProps {
   searchParams: Promise<{
     search?: string;
     category?: string;
+    district?: string;
+    location?: string;
     sortBy?: string;
     page?: string;
   }>;
@@ -22,6 +24,8 @@ export default async function OffersPage({ searchParams }: OffersPageProps) {
     limit: 12,
     search: resolvedSearchParams.search,
     category: resolvedSearchParams.category,
+    district: resolvedSearchParams.district,
+    location: resolvedSearchParams.location,
     sortBy: resolvedSearchParams.sortBy,
   });
 
@@ -39,6 +43,35 @@ export default async function OffersPage({ searchParams }: OffersPageProps) {
     // Fallback or empty categories
   }
 
+  // Define all Sri Lankan districts for location filtering
+  const districts = [
+    'Colombo',
+    'Gampaha',
+    'Kalutara',
+    'Kandy',
+    'Matale',
+    'Nuwara Eliya',
+    'Galle',
+    'Matara',
+    'Hambantota',
+    'Jaffna',
+    'Kilinochchi',
+    'Mannar',
+    'Vavuniya',
+    'Mullaitivu',
+    'Batticaloa',
+    'Ampara',
+    'Trincomalee',
+    'Kurunegala',
+    'Puttalam',
+    'Anuradhapura',
+    'Polonnaruwa',
+    'Badulla',
+    'Moneragala',
+    'Ratnapura',
+    'Kegalle',
+  ];
+
   return (
     <PublicRoute>
       <div className="flex min-h-screen flex-col">
@@ -53,7 +86,7 @@ export default async function OffersPage({ searchParams }: OffersPageProps) {
                 Discover amazing deals from our verified partners
               </p>
               
-              <OfferFilters categories={categories} />
+              <OfferFilters categories={categories} districts={districts} />
             </div>
 
             {offers.length > 0 ? (

@@ -1,13 +1,16 @@
 'use client';
 
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Offer } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
+
+function formatDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 interface OfferCardProps {
   offer: Offer;
@@ -24,9 +27,13 @@ export function OfferCard({
   onUnsave,
   showSaveButton = true,
 }: OfferCardProps) {
-  const isExpired = new Date(offer.expiryDate) < new Date();
-  const isExpiringSoon =
-    !isExpired && new Date(offer.expiryDate).getTime() - Date.now() < 5 * 24 * 60 * 60 * 1000;
+  const expiryDate = new Date(offer.expiryDate);
+  const today = new Date();
+  const daysUntilExpiry = Math.ceil(
+    (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const isExpired = daysUntilExpiry < 0;
+  const expiresSoon = daysUntilExpiry <= 5 && daysUntilExpiry >= 0;
 
   const handleSaveClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,78 +46,89 @@ export function OfferCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <Link href={`/member/offers/${offer._id}`}>
-        <div className="relative h-48 w-full">
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+        {offer.imageUrl ? (
           <Image
-            src={offer.imageUrl || '/placeholder-offer.jpg'}
+            src={offer.imageUrl}
             alt={offer.title}
             fill
-            className="object-cover"
+            className="object-cover transition-transform group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 20vw"
           />
-          {isExpiringSoon && (
-            <Badge className="absolute top-2 right-2 bg-red-500">Expires Soon</Badge>
-          )}
-          {isExpired && (
-            <Badge variant="destructive" className="absolute top-2 right-2">
-              Expired
-            </Badge>
-          )}
-          {showSaveButton && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 left-2 h-8 w-8 bg-background/80 hover:bg-background"
-              onClick={handleSaveClick}
-            >
-              <Heart className={`h-4 w-4 ${isSaved ? 'fill-red-500 text-red-500' : ''}`} />
-            </Button>
-          )}
-        </div>
-      </Link>
-
-      <CardHeader>
-        <h3 className="font-semibold text-lg line-clamp-2">{offer.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">{offer.description}</p>
-      </CardHeader>
-
-      <CardContent>
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <span className="text-2xl font-bold text-primary">
-              Rs. {offer.discountedPrice?.toLocaleString()}
-            </span>
-            {offer.originalPrice && offer.originalPrice > offer.discountedPrice && (
-              <span className="text-sm text-muted-foreground line-through ml-2">
-                Rs. {offer.originalPrice.toLocaleString()}
-              </span>
-            )}
+        ) : (
+          <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
+            No Image
           </div>
-          {offer.discount && (
-            <Badge variant="secondary">{offer.discount}% OFF</Badge>
+        )}
+        
+        {expiresSoon && (
+          <Badge
+            variant="destructive"
+            className="absolute right-2 top-2 bg-red-500/90 text-white"
+          >
+            Expires Soon
+          </Badge>
+        )}
+        
+        {isExpired && (
+          <Badge variant="destructive" className="absolute right-2 top-2">
+            Expired
+          </Badge>
+        )}
+        
+        {showSaveButton && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 left-2 h-8 w-8 bg-background/80 hover:bg-background"
+            onClick={handleSaveClick}
+          >
+            <Heart className={`h-4 w-4 ${isSaved ? 'fill-red-500 text-red-500' : ''}`} />
+          </Button>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="mb-2 line-clamp-2 text-lg font-semibold leading-tight">{offer.title}</h3>
+
+        <div className="mb-3 flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-primary">
+            Rs. {offer.discountedPrice?.toFixed(2)}
+          </span>
+          {offer.originalPrice && offer.originalPrice > offer.discountedPrice && (
+            <span className="text-sm text-muted-foreground line-through">
+              Rs. {offer.originalPrice.toFixed(2)}
+            </span>
           )}
         </div>
 
-        <div className="space-y-1 text-sm text-muted-foreground">
+        {offer.discount && (
+          <Badge variant="secondary" className="mb-3 w-fit">
+            {offer.discount}% OFF
+          </Badge>
+        )}
+
+        <div className="space-y-1 mb-4">
           {typeof offer.partner === 'object' && offer.partner?.location && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
-              <span>{offer.partner.location.city}</span>
+              <span>{offer.partner.location.city}, {offer.partner.location.district}</span>
             </div>
           )}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />
-            <span>Expires {formatDistanceToNow(new Date(offer.expiryDate), { addSuffix: true })}</span>
+            <span>Expires {formatDate(expiryDate)}</span>
           </div>
         </div>
-      </CardContent>
 
-      <CardFooter>
-        <Button asChild className="w-full">
-          <Link href={`/member/offers/${offer._id}`}>View Details</Link>
-        </Button>
-      </CardFooter>
-    </Card>
+        <Link href={`/member/offers/${offer._id}`} className="mt-auto">
+          <Button className="w-full" size="default">
+            View Details
+          </Button>
+        </Link>
+      </div>
+    </div>
   );
 }
 

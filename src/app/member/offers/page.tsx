@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 import type { Offer } from '@/types';
 
 export default function BrowseOffersPage() {
@@ -27,6 +27,8 @@ export default function BrowseOffersPage() {
   const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string>('all');
+  const [district, setDistrict] = useState<string>('all');
+  const [location, setLocation] = useState<string>('');
   const [categories, setCategories] = useState<string[]>([]);
 
   const fetchOffers = async () => {
@@ -35,6 +37,8 @@ export default function BrowseOffersPage() {
       const params: any = {};
       if (search) params.search = search;
       if (category && category !== 'all') params.category = category;
+      if (district && district !== 'all') params.district = district;
+      if (location) params.location = location;
 
       const data = await browseOffers(params);
       setOffers(data.offers || []);
@@ -58,7 +62,18 @@ export default function BrowseOffersPage() {
 
   useEffect(() => {
     fetchOffers();
-  }, [category]);
+  }, [category, district]);
+
+  // Debounce location search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (location || location === '') {
+        fetchOffers();
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [location]);
 
   useEffect(() => {
     // Fetch categories
@@ -145,6 +160,50 @@ export default function BrowseOffersPage() {
                   {cat}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          <div className="relative w-full md:w-48">
+            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search location..."
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          <Select value={district} onValueChange={setDistrict}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="District" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Districts</SelectItem>
+              <SelectItem value="Colombo">Colombo</SelectItem>
+              <SelectItem value="Gampaha">Gampaha</SelectItem>
+              <SelectItem value="Kalutara">Kalutara</SelectItem>
+              <SelectItem value="Kandy">Kandy</SelectItem>
+              <SelectItem value="Matale">Matale</SelectItem>
+              <SelectItem value="Nuwara Eliya">Nuwara Eliya</SelectItem>
+              <SelectItem value="Galle">Galle</SelectItem>
+              <SelectItem value="Matara">Matara</SelectItem>
+              <SelectItem value="Hambantota">Hambantota</SelectItem>
+              <SelectItem value="Jaffna">Jaffna</SelectItem>
+              <SelectItem value="Kilinochchi">Kilinochchi</SelectItem>
+              <SelectItem value="Mannar">Mannar</SelectItem>
+              <SelectItem value="Vavuniya">Vavuniya</SelectItem>
+              <SelectItem value="Mullaitivu">Mullaitivu</SelectItem>
+              <SelectItem value="Batticaloa">Batticaloa</SelectItem>
+              <SelectItem value="Ampara">Ampara</SelectItem>
+              <SelectItem value="Trincomalee">Trincomalee</SelectItem>
+              <SelectItem value="Kurunegala">Kurunegala</SelectItem>
+              <SelectItem value="Puttalam">Puttalam</SelectItem>
+              <SelectItem value="Anuradhapura">Anuradhapura</SelectItem>
+              <SelectItem value="Polonnaruwa">Polonnaruwa</SelectItem>
+              <SelectItem value="Badulla">Badulla</SelectItem>
+              <SelectItem value="Moneragala">Moneragala</SelectItem>
+              <SelectItem value="Ratnapura">Ratnapura</SelectItem>
+              <SelectItem value="Kegalle">Kegalle</SelectItem>
             </SelectContent>
           </Select>
         </div>

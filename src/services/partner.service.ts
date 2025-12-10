@@ -54,4 +54,30 @@ export const partnerService = {
     });
     return response.data;
   },
+
+  /**
+   * Ban a partner
+   * @param id - Partner ID to ban
+   * @param reason - Optional ban reason
+   * @returns Updated partner data
+   */
+  banPartner: async (
+    id: string,
+    reason?: string
+  ): Promise<ApiResponse<{ partner: Partner }>> => {
+    const response = await apiClient.patch(`/partners/${id}/ban`, {
+      reason,
+    });
+    return response.data;
+  },
+
+  /**
+   * Unban a partner
+   * @param id - Partner ID to unban
+   * @returns Updated partner data
+   */
+  unbanPartner: async (id: string): Promise<ApiResponse<{ partner: Partner }>> => {
+    const response = await apiClient.patch(`/partners/${id}/unban`);
+    return response.data;
+  },
 };

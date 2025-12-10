@@ -11,6 +11,8 @@ import type {
 export const browseOffers = async (params?: {
   category?: string;
   city?: string;
+  district?: string;
+  location?: string;
   search?: string;
   page?: number;
   limit?: number;
@@ -43,10 +45,12 @@ export const fetchOffersServer = async (options: {
   limit?: number;
   search?: string;
   category?: string;
+  district?: string;
+  location?: string;
   sortBy?: string;
 } = {}): Promise<{ offers: Offer[]; pagination: any }> => {
   try {
-    const { page = 1, limit = 10, search, category, sortBy } = options;
+    const { page = 1, limit = 10, search, category, district, location, sortBy } = options;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
     
     const params = new URLSearchParams();
@@ -54,6 +58,8 @@ export const fetchOffersServer = async (options: {
     params.append('limit', limit.toString());
     if (search) params.append('search', search);
     if (category && category !== 'all') params.append('category', category);
+    if (district && district !== 'all') params.append('district', district);
+    if (location) params.append('location', location);
     if (sortBy) params.append('sortBy', sortBy);
 
     const response = await fetch(`${baseUrl}/offers?${params.toString()}`, {

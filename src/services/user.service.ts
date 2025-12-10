@@ -1,5 +1,5 @@
 import apiClient from "@/lib/apiClient";
-import type { ApiResponse, User, UserWithDetails } from "@/types";
+import type { ApiResponse, User, UserWithDetails, Partner, Member } from "@/types";
 
 export interface UsersResponse {
   users: User[];
@@ -47,10 +47,15 @@ export const userService = {
    * @returns User with associated partner or member data
    */
   getUser: async (id: string): Promise<UserWithDetails> => {
-    const response = await apiClient.get<ApiResponse<{ user: UserWithDetails }>>(
+    const response = await apiClient.get<ApiResponse<{ user: User; partner?: Partner; member?: Member }>>(
       `/users/${id}`
     );
-    return response.data.data.user;
+    const { user, partner, member } = response.data.data;
+    return {
+      ...user,
+      partner,
+      member,
+    };
   },
 
   /**
@@ -79,6 +84,8 @@ export const userService = {
     await apiClient.delete(`/users/${id}`);
   },
 };
+
+
 
 
 

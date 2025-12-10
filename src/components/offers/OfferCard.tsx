@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar, MapPin } from 'lucide-react';
 import type { Offer } from '@/types';
 
 function formatDate(date: Date | string): string {
@@ -50,7 +51,7 @@ export function OfferCard({ offer }: OfferCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="mb-2 line-clamp-2 font-semibold leading-tight">{offer.title}</h3>
+        <h3 className="mb-2 line-clamp-2 text-lg font-semibold leading-tight">{offer.title}</h3>
 
         <div className="mb-3 flex items-baseline gap-2">
           <span className="text-2xl font-bold text-primary">
@@ -59,15 +60,26 @@ export function OfferCard({ offer }: OfferCardProps) {
           <span className="text-sm text-muted-foreground line-through">
             Rs. {offer.originalPrice.toFixed(2)}
           </span>
-          <span className="text-sm font-medium text-green-600">{offer.discount}% OFF</span>
         </div>
 
-        <div className="mb-4 text-xs text-muted-foreground">
-          Expires: {formatDate(expiryDate)}
+        <Badge variant="secondary" className="mb-3 w-fit">
+          {offer.discount}% OFF
+        </Badge>
+
+        <div className="mb-4 flex items-center gap-1 text-xs text-muted-foreground">
+          <Calendar className="h-3 w-3" />
+          <span>Expires {formatDate(expiryDate)}</span>
         </div>
+
+        {typeof offer.partner === 'object' && offer.partner?.location && (
+          <div className="mb-4 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3" />
+            <span>{offer.partner.location.city}, {offer.partner.location.district}</span>
+          </div>
+        )}
 
         <Link href={`/offers/${offer._id}`} className="mt-auto">
-          <Button className="w-full" variant="default">
+          <Button className="w-full" size="default">
             View Details
           </Button>
         </Link>
