@@ -10,17 +10,22 @@ const apiClient = axios.create({
   },
 });
 
+// Debug log to verify API URL
+if (typeof window !== "undefined") {
+  console.log("API URL configured:", apiClient.defaults.baseURL);
+}
+
 // Request interceptor: Cookies are sent automatically by browser with withCredentials: true
 // HTTP-only cookies cannot be read by JavaScript, so we don't try to read them
 apiClient.interceptors.request.use((config) => {
   // Cookies are automatically included by the browser when withCredentials is true
   // No need to manually add Authorization header for HTTP-only cookies
-  
+
   // If FormData is being sent, remove Content-Type header to let axios set it with boundary
   if (config.data instanceof FormData) {
-    delete config.headers['Content-Type'];
+    delete config.headers["Content-Type"];
   }
-  
+
   return config;
 });
 

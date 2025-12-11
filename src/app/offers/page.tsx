@@ -3,7 +3,7 @@ import { Footer } from '@/components/layout/Footer';
 import { PublicRoute } from '@/components/layout/PublicRoute';
 import { OfferCard } from '@/components/offers/OfferCard';
 import { OfferFilters } from '@/components/offers/OfferFilters';
-import { fetchOffersServer, partnerOfferService } from '@/services/offer.service';
+import { fetchOffersServer, fetchCategoriesServer } from '@/services/offer.service';
 
 interface OffersPageProps {
   searchParams: Promise<{
@@ -30,17 +30,11 @@ export default async function OffersPage({ searchParams }: OffersPageProps) {
   });
 
   // Fetch categories for the filter
-  // Note: We need a way to get categories server-side without auth if possible, 
-  // or we can just fetch them client-side in the filter component.
-  // However, passing them as props is better for SEO and initial load.
-  // Assuming partnerOfferService.getCategories works or we handle the error gracefully.
   let categories: string[] = [];
   try {
-    const categoriesData = await partnerOfferService.getCategories();
-    categories = categoriesData.data.categories;
+    categories = await fetchCategoriesServer();
   } catch (error) {
     console.error('Failed to fetch categories:', error);
-    // Fallback or empty categories
   }
 
   // Define all Sri Lankan districts for location filtering

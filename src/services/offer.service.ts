@@ -62,21 +62,37 @@ export const fetchOffersServer = async (options: {
     if (location) params.append('location', location);
     if (sortBy) params.append('sortBy', sortBy);
 
-    const response = await fetch(`${baseUrl}/offers?${params.toString()}`, {
+    const url = `${baseUrl}/offers?${params.toString()}`;
+    console.log('[fetchOffersServer] Fetching from:', url);
+
+    const response = await fetch(url, {
       next: { revalidate: 0 }, // Dynamic data needs 0 revalidation or force-dynamic
+      cache: 'no-store',
     });
 
+    console.log('[fetchOffersServer] Response status:', response.status);
+    console.log('[fetchOffersServer] Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      throw new Error('Failed to fetch offers');
+      const text = await response.text();
+      console.error('[fetchOffersServer] Error response:', text.substring(0, 500));
+      throw new Error(`Failed to fetch offers: ${response.status} ${response.statusText}`);
     }
 
-    const data: ApiResponse<OfferBrowseResponse> = await response.json();
+    const text = await response.text();
+    console.log('[fetchOffersServer] Response text (first 200 chars):', text.substring(0, 200));
+    
+    const data: ApiResponse<OfferBrowseResponse> = JSON.parse(text);
     return {
       offers: data.data.offers,
       pagination: data.data.pagination
     };
   } catch (error) {
-    console.error('Error fetching offers:', error);
+    console.error('[fetchOffersServer] Error:', error);
+    if (error instanceof Error) {
+      console.error('[fetchOffersServer] Error message:', error.message);
+      console.error('[fetchOffersServer] Error stack:', error.stack);
+    }
     return { offers: [], pagination: null };
   }
 };
@@ -115,6 +131,40 @@ export const fetchOfferReviewsServer = async (offerId: string): Promise<Review[]
     return data.data.reviews;
   } catch (error) {
     console.error('Error fetching reviews:', error);
+    return [];
+  }
+};
+
+export const fetchCategoriesServer = async (): Promise<string[]> => {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const url = `${baseUrl}/offers/categories`;
+    
+    console.log('[fetchCategoriesServer] Fetching from:', url);
+    
+    const response = await fetch(url, {
+      next: { revalidate: 300 }, // Revalidate every 5 minutes
+      cache: 'force-cache',
+    });
+
+    console.log('[fetchCategoriesServer] Response status:', response.status);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('[fetchCategoriesServer] Error response:', text.substring(0, 500));
+      return [];
+    }
+
+    const text = await response.text();
+    console.log('[fetchCategoriesServer] Response text (first 200 chars):', text.substring(0, 200));
+    
+    const data: ApiResponse<{ categories: string[] }> = JSON.parse(text);
+    return data.data.categories;
+  } catch (error) {
+    console.error('[fetchCategoriesServer] Error:', error);
+    if (error instanceof Error) {
+      console.error('[fetchCategoriesServer] Error message:', error.message);
+    }
     return [];
   }
 };

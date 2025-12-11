@@ -5,7 +5,7 @@ import { LoginTrigger } from '@/components/layout/LoginTrigger';
 import { OfferCard } from '@/components/offers/OfferCard';
 import { OfferFilters } from '@/components/offers/OfferFilters';
 import { Button } from '@/components/ui/button';
-import { fetchOffersServer, partnerOfferService } from '@/services/offer.service';
+import { fetchOffersServer, fetchCategoriesServer } from '@/services/offer.service';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
@@ -33,8 +33,7 @@ export default async function Home({ searchParams }: HomeProps) {
   // Fetch categories for the filter
   let categories: string[] = [];
   try {
-    const categoriesData = await partnerOfferService.getCategories();
-    categories = categoriesData.data.categories;
+    categories = await fetchCategoriesServer();
   } catch (error) {
     console.error('Failed to fetch categories:', error);
   }
