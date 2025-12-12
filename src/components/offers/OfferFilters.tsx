@@ -175,10 +175,10 @@ export function OfferFilters({ categories, districts = [] }: OfferFiltersProps) 
           <SelectContent>
             <SelectItem value="newest">Newest First</SelectItem>
             <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="price_asc">Price: Low to High</SelectItem>
-            <SelectItem value="price_desc">Price: High to Low</SelectItem>
-            <SelectItem value="discount_desc">Highest Discount</SelectItem>
-            <SelectItem value="expiring_soon">Expiring Soon</SelectItem>
+            <SelectItem value="price-low">Price: Low to High</SelectItem>
+            <SelectItem value="price-high">Price: High to Low</SelectItem>
+            <SelectItem value="discount-high">Highest Discount</SelectItem>
+            <SelectItem value="expiring">Expiring Soon</SelectItem>
           </SelectContent>
         </Select>
 

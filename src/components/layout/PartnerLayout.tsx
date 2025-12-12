@@ -145,22 +145,26 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
         <div className="flex min-h-screen w-full">
           <Sidebar className="bg-[#f4f4f5] border-r-0">
             <SidebarHeader className="h-40 justify-center">
-              <div className="flex flex-col items-center px-4 gap-4">
-                <Logo width={100} height={32} />
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground overflow-hidden">
-                   {user?.partner?.profileImage ? (
-                      <img 
-                        src={user.partner.profileImage} 
-                        alt={user.partner.partnerName} 
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-6 w-6" />
-                    )}
+              <div className="flex flex-col px-4 gap-4 w-full">
+                <div className="self-start">
+                  <Logo width={100} height={32} />
                 </div>
-                <div className="text-center">
-                  <p className="text-sm font-semibold">{user?.partner?.partnerName}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                <div className="flex flex-col items-center w-full gap-2">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground overflow-hidden">
+                    {user?.partner?.profileImage ? (
+                        <img 
+                          src={user.partner.profileImage} 
+                          alt={user.partner.partnerName} 
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-6 w-6" />
+                      )}
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold">{user?.partner?.partnerName}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
                 </div>
               </div>
             </SidebarHeader>

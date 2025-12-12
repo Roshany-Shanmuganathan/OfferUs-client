@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Edit2, Loader2, Camera } from 'lucide-react';
 import { toast } from 'sonner';
@@ -82,12 +82,10 @@ export function AdminProfileSection({ pendingApprovals = 0 }: AdminProfileSectio
   return (
     <div className="bg-white rounded-lg p-6 mb-8 flex items-center gap-6 shadow-sm border">
       <div className="relative group">
-        <Avatar
-          src={user.profileImage}
-          alt={user.email}
-          className="h-20 w-20 border-2 border-white shadow-md"
-          size="xl"
-        />
+        <Avatar className="h-20 w-20 border-2 border-white shadow-md">
+          <AvatarImage src={user.profileImage} alt={user.email} />
+          <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
         <label
           htmlFor="profile-upload"
           className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-1.5 rounded-full cursor-pointer hover:bg-primary/90 transition-colors shadow-sm"

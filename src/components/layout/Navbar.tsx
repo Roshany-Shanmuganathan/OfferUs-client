@@ -18,7 +18,7 @@ import { User, LogOut, Menu, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSavedOffers } from "@/contexts/SavedOffersContext";
 import { useRouter } from "next/navigation";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberNotificationBell } from "@/components/member/MemberNotificationBell";
 import { Logo } from "@/components/ui/logo";
 
@@ -137,12 +137,13 @@ export function Navbar() {
                         variant="ghost"
                         className="flex items-center gap-2 pl-0 pr-2 rounded-full"
                       >
-                        <Avatar
-                          className="h-9 w-9"
-                          src={getProfileImage()}
-                          alt={getDisplayName()}
-                          fallback={getInitials()}
-                        />
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage
+                            src={getProfileImage() || undefined}
+                            alt={getDisplayName()}
+                          />
+                          <AvatarFallback>{getInitials()}</AvatarFallback>
+                        </Avatar>
                         <span className="hidden sm:inline font-medium">
                           {getDisplayName()}
                         </span>

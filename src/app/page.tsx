@@ -46,9 +46,9 @@ export default async function Home({ searchParams }: HomeProps) {
           <LoginTrigger />
         </Suspense>
         <main className="flex-1">
-          <div className="container mx-auto px-4 py-16">
-            <div className="mb-12 text-center space-y-6">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
+          <div className=" mx-auto ">
+            <div className="mb-12 text-center bg-primary space-y-6 px-4 py-16">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-secondary">
                 Welcome to OfferUs
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -69,9 +69,9 @@ export default async function Home({ searchParams }: HomeProps) {
                   ))}
                 </div>
 
-                <div className="flex justify-center">
+                <div className="flex justify-center mb-5">
                   <Link href="/offers">
-                    <Button size="lg" variant="outline">
+                    <Button size="lg" variant="default">
                       Browse More
                     </Button>
                   </Link>
