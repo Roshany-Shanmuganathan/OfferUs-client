@@ -5,6 +5,7 @@ import { OfferCard } from '@/components/member/OfferCard';
 import { browseOffers } from '@/services/offer.service';
 import { savedOfferService } from '@/services/savedOffer.service';
 import { partnerOfferService } from '@/services/offer.service';
+import { useSavedOffers } from '@/contexts/SavedOffersContext';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,6 +31,7 @@ export default function BrowseOffersPage() {
   const [district, setDistrict] = useState<string>('all');
   const [location, setLocation] = useState<string>('');
   const [categories, setCategories] = useState<string[]>([]);
+  const { refreshCount } = useSavedOffers();
 
   const fetchOffers = async () => {
     try {
@@ -95,6 +97,7 @@ export default function BrowseOffersPage() {
       setSavingStates((prev) => ({ ...prev, [offerId]: true }));
       await savedOfferService.saveOffer(offerId);
       setSavedOfferIds((prev) => new Set([...prev, offerId]));
+      refreshCount();
       toast.success('Offer saved');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to save offer';
@@ -113,6 +116,7 @@ export default function BrowseOffersPage() {
         newSet.delete(offerId);
         return newSet;
       });
+      refreshCount();
       toast.success('Offer removed from saved list');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to remove offer';

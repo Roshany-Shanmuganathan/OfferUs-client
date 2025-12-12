@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SavedOffersProvider } from "@/contexts/SavedOffersContext";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -37,8 +38,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
-            <Toaster />
+            <SavedOffersProvider>
+              {children}
+              <Toaster />
+            </SavedOffersProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

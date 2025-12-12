@@ -43,3 +43,4 @@ export function Logo({ className, width = 120, height = 40 }: LogoProps) {
   );
 }
 
+

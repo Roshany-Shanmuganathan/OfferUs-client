@@ -14,13 +14,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { MemberRegisterModal } from '@/components/auth/MemberRegisterModal';
-import { User, LogOut, Menu } from 'lucide-react';
+import { User, LogOut, Menu, ShoppingCart } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useSavedOffers } from '@/contexts/SavedOffersContext';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/avatar';
+import { MemberNotificationBell } from '@/components/member/MemberNotificationBell';
 import { Logo } from '@/components/ui/logo';
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
+  const { count } = useSavedOffers();
   const [loginOpen, setLoginOpen] = useState(false);
   const [memberRegisterOpen, setMemberRegisterOpen] = useState(false);
   const router = useRouter();
@@ -102,6 +106,27 @@ export function Navbar() {
             <div className="flex items-center gap-4">
               {isAuthenticated ? (
                 <>
+                  {user?.role === 'member' && (
+                    <div className="flex items-center gap-2 mr-2">
+                      <MemberNotificationBell />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="relative"
+                        onClick={() => router.push('/saved-offers')}
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                        {count > 0 && (
+                          <Badge
+                            variant="destructive"
+                            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full p-0 text-[10px]"
+                          >
+                            {count}
+                          </Badge>
+                        )}
+                      </Button>
+                    </div>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center gap-2 pl-0 pr-2 rounded-full">
