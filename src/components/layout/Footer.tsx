@@ -26,15 +26,15 @@ export function Footer({ variant = 'full' }: FooterProps) {
           <div className="space-y-4">
             <div className="flex items-start space-x-3 text-sm text-gray-800">
               <MapPin className="h-5 w-5 mt-0.5 shrink-0" />
-              <span>No-459/2, poonthoddam,<br />Vavuniya</span>
+              <span>Vavuniya, Sri Lanka</span>
             </div>
             <div className="flex items-center space-x-3 text-sm text-gray-800">
               <Phone className="h-5 w-5 shrink-0" />
-              <span>+94 75 598 4905</span>
+              <span>+94 775058422</span>
             </div>
             <div className="flex items-center space-x-3 text-sm text-gray-800">
               <Mail className="h-5 w-5 shrink-0" />
-              <span>info@offer-us.lk</span>
+              <span>support@offerus.lk</span>
             </div>
             
             <div className="pt-4">

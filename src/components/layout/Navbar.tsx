@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,16 +11,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { LoginModal } from '@/components/auth/LoginModal';
-import { MemberRegisterModal } from '@/components/auth/MemberRegisterModal';
-import { User, LogOut, Menu, ShoppingCart } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useSavedOffers } from '@/contexts/SavedOffersContext';
-import { useRouter } from 'next/navigation';
-import { Avatar } from '@/components/ui/avatar';
-import { MemberNotificationBell } from '@/components/member/MemberNotificationBell';
-import { Logo } from '@/components/ui/logo';
+} from "@/components/ui/dropdown-menu";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { MemberRegisterModal } from "@/components/auth/MemberRegisterModal";
+import { User, LogOut, Menu, ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useSavedOffers } from "@/contexts/SavedOffersContext";
+import { useRouter } from "next/navigation";
+import { Avatar } from "@/components/ui/avatar";
+import { MemberNotificationBell } from "@/components/member/MemberNotificationBell";
+import { Logo } from "@/components/ui/logo";
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -40,24 +40,26 @@ export function Navbar() {
     if (user?.partner) {
       return user.partner.partnerName;
     }
-    return user?.email || 'User';
+    return user?.email || "User";
   };
 
   const getRolePath = () => {
-    if (user?.role === 'admin') return '/admin';
-    if (user?.role === 'partner') return '/partner';
-    if (user?.role === 'member') return '/member';
-    return '/';
+    if (user?.role === "admin") return "/admin";
+    if (user?.role === "partner") return "/partner";
+    if (user?.role === "member") return "/member";
+    return "/";
   };
 
   const getInitials = () => {
     if (user?.member) {
-      return `${user.member.firstName.charAt(0)}${user.member.lastName.charAt(0)}`;
+      return `${user.member.firstName.charAt(0)}${user.member.lastName.charAt(
+        0
+      )}`;
     }
     if (user?.partner) {
       return user.partner.partnerName.charAt(0).toUpperCase();
     }
-    return user?.email?.charAt(0).toUpperCase() || 'U';
+    return user?.email?.charAt(0).toUpperCase() || "U";
   };
 
   const getProfileImage = () => {
@@ -82,12 +84,14 @@ export function Navbar() {
                 >
                   Home
                 </Link>
-                <Link
-                  href="/offers"
-                  className="text-sm font-medium transition-colors hover:text-primary"
-                >
-                  Offers
-                </Link>
+                {(!user || user.role !== "member") && (
+                  <Link
+                    href="/offers"
+                    className="text-sm font-medium transition-colors hover:text-primary"
+                  >
+                    Offers
+                  </Link>
+                )}
                 <Link
                   href="/about"
                   className="text-sm font-medium transition-colors hover:text-primary"
@@ -106,14 +110,14 @@ export function Navbar() {
             <div className="flex items-center gap-4">
               {isAuthenticated ? (
                 <>
-                  {user?.role === 'member' && (
+                  {user?.role === "member" && (
                     <div className="flex items-center gap-2 mr-2">
                       <MemberNotificationBell />
                       <Button
                         variant="ghost"
                         size="icon"
                         className="relative"
-                        onClick={() => router.push('/saved-offers')}
+                        onClick={() => router.push("/saved-offers")}
                       >
                         <ShoppingCart className="h-5 w-5" />
                         {count > 0 && (
@@ -129,30 +133,39 @@ export function Navbar() {
                   )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center gap-2 pl-0 pr-2 rounded-full">
+                      <Button
+                        variant="ghost"
+                        className="flex items-center gap-2 pl-0 pr-2 rounded-full"
+                      >
                         <Avatar
                           className="h-9 w-9"
                           src={getProfileImage()}
                           alt={getDisplayName()}
                           fallback={getInitials()}
                         />
-                        <span className="hidden sm:inline font-medium">{getDisplayName()}</span>
+                        <span className="hidden sm:inline font-medium">
+                          {getDisplayName()}
+                        </span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{getDisplayName()}</p>
+                          <p className="text-sm font-medium leading-none">
+                            {getDisplayName()}
+                          </p>
                           <p className="text-xs leading-none text-muted-foreground">
                             {user?.email}
                           </p>
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => router.push(getRolePath())}>
+                      <DropdownMenuItem
+                        onClick={() => router.push(getRolePath())}
+                      >
                         Dashboard
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/profile')}>
+                      <DropdownMenuItem onClick={() => router.push("/profile")}>
                         Profile
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -181,7 +194,7 @@ export function Navbar() {
                   </Button>
                   <Button
                     variant="default"
-                    onClick={() => router.push('/partner/register')}
+                    onClick={() => router.push("/partner/register")}
                     className="hidden sm:inline-flex"
                   >
                     Join as Partner
@@ -196,10 +209,14 @@ export function Navbar() {
                       <DropdownMenuItem onClick={() => setLoginOpen(true)}>
                         Sign In
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setMemberRegisterOpen(true)}>
+                      <DropdownMenuItem
+                        onClick={() => setMemberRegisterOpen(true)}
+                      >
                         Sign Up
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/partner/register')}>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/partner/register")}
+                      >
                         Join as Partner
                       </DropdownMenuItem>
                     </DropdownMenuContent>
