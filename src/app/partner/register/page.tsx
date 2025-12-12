@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
-import { PublicRoute } from '@/components/layout/PublicRoute';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { PublicRoute } from "@/components/layout/PublicRoute";
 import {
   Form,
   FormControl,
@@ -13,60 +14,77 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ImageUploader } from '@/components/ui/image-uploader';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ImageUploader } from "@/components/ui/image-uploader";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
-  partnerRegisterSchema,
+  partnerRegisterBaseSchema,
   SRI_LANKAN_DISTRICTS,
   type PartnerRegisterFormData,
-} from '@/lib/validations';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import type { ApiError, PartnerRegisterRequest } from '@/types';
+} from "@/lib/validations";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { ApiError, PartnerRegisterRequest } from "@/types";
+
+// Extend schema locally to include terms agreement
+const formSchema = partnerRegisterBaseSchema
+  .extend({
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+      message: "You must agree to the terms and conditions",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+type FormSchema = z.infer<typeof formSchema>;
 
 export default function PartnerRegisterPage() {
   const { registerPartner } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const form = useForm<PartnerRegisterFormData>({
-    resolver: zodResolver(partnerRegisterSchema),
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
-      confirmPassword: '',
-      partnerName: '',
-      shopName: '',
+      email: "",
+      password: "",
+      confirmPassword: "",
+      partnerName: "",
+      shopName: "",
       location: {
-        street: '',
-        city: '',
-        district: '',
-        postalCode: '',
+        street: "",
+        city: "",
+        district: "",
+        postalCode: "",
       },
-      category: '',
+      category: "",
       contactInfo: {
-        mobileNumber: '',
-        website: '',
+        mobileNumber: "",
+        website: "",
       },
-      profileImage: '',
+      profileImage: "",
+      agreeToTerms: false,
     },
   });
 
-  const onSubmit = async (data: PartnerRegisterFormData) => {
+  const onSubmit = async (data: FormSchema) => {
     setIsLoading(true);
     try {
-      const { confirmPassword, ...registerData } = data;
+      // Remove agreeToTerms before sending to API
+      const { confirmPassword, agreeToTerms, ...registerData } = data;
+
       // Clean up empty website
       if (!registerData.contactInfo.website) {
         delete registerData.contactInfo.website;
@@ -80,20 +98,18 @@ export default function PartnerRegisterPage() {
         registerData.location.coordinates &&
         Array.isArray(registerData.location.coordinates)
       ) {
-        registerData.location.coordinates = registerData.location.coordinates.slice(
-          0,
-          2
-        ) as [number, number];
+        registerData.location.coordinates =
+          registerData.location.coordinates.slice(0, 2) as [number, number];
       }
       await registerPartner(registerData as PartnerRegisterRequest);
-      toast.success('Registration submitted. Waiting for admin approval.', {
+      toast.success("Registration submitted. Waiting for admin approval.", {
         description:
-          'You will be able to login once your registration is approved.',
+          "You will be able to login once your registration is approved.",
       });
       form.reset();
       // Redirect to home after successful registration
       setTimeout(() => {
-        router.push('/');
+        router.push("/");
       }, 2000);
     } catch (error: unknown) {
       // Handle field-specific errors from API
@@ -106,8 +122,8 @@ export default function PartnerRegisterPage() {
         apiError.response.data.errors.forEach((err) => {
           if (err.field && err.message) {
             // Handle nested fields like location.street
-            if (err.field.includes('.')) {
-              const fieldPath = err.field.split('.') as [string, ...string[]];
+            if (err.field.includes(".")) {
+              const fieldPath = err.field.split(".") as [string, ...string[]];
               // Use unknown first for type conversion as TypeScript requires
               form.setError(
                 fieldPath as unknown as Parameters<typeof form.setError>[0],
@@ -128,9 +144,10 @@ export default function PartnerRegisterPage() {
         // Only show toast for general errors, not field-specific ones
         const errorMessage =
           apiError.response?.data?.message || apiError.message;
-        if (errorMessage && !errorMessage.includes('validation')) {
+        if (errorMessage && !errorMessage.includes("validation")) {
           toast.error(
-            errorMessage || 'Registration failed. Please check the form and try again.'
+            errorMessage ||
+              "Registration failed. Please check the form and try again."
           );
         }
       }
@@ -143,7 +160,7 @@ export default function PartnerRegisterPage() {
     <PublicRoute>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
-        
+
         {/* Hero Header */}
         <div className="bg-[#0B211D] text-white py-20 px-4 text-center">
           <div className="container mx-auto max-w-4xl">
@@ -151,8 +168,8 @@ export default function PartnerRegisterPage() {
               Become a Partner with Offers
             </h1>
             <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-              Join our platform to reach wider audience and offer your exclusive deals.
-              Fill out the form below to get started.
+              Join our platform to reach wider audience and offer your exclusive
+              deals. Fill out the form below to get started.
             </p>
           </div>
         </div>
@@ -160,14 +177,16 @@ export default function PartnerRegisterPage() {
         <main className="flex-1 container mx-auto px-4 pb-20 -mt-10 relative z-10">
           <div className="bg-white rounded-lg shadow-xl p-8 max-w-5xl mx-auto border border-gray-100">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
                 {/* Section 1: Shop / Business Information */}
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-gray-900">
                     Shop / Business Information
                   </h2>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -254,7 +273,7 @@ export default function PartnerRegisterPage() {
                             <FormLabel>District</FormLabel>
                             <Select
                               onValueChange={field.onChange}
-                              value={field.value || ''}
+                              value={field.value || ""}
                               disabled={isLoading}
                             >
                               <FormControl>
@@ -322,7 +341,7 @@ export default function PartnerRegisterPage() {
                   <h2 className="text-xl font-bold text-gray-900">
                     Primary Contact Details
                   </h2>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -384,9 +403,9 @@ export default function PartnerRegisterPage() {
                   </div>
                 </div>
 
-                {/* Section 3: Account Security (Hidden/Preserved) */}
+                {/* Section 3: Account Security */}
                 <div className="space-y-6 pt-4 border-t">
-                   <h2 className="text-xl font-bold text-gray-900">
+                  <h2 className="text-xl font-bold text-gray-900">
                     Account Security
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -433,7 +452,9 @@ export default function PartnerRegisterPage() {
 
                 {/* Profile Image (Optional) */}
                 <div className="space-y-4 pt-4 border-t">
-                  <h3 className="font-semibold text-lg">Profile Image (Optional)</h3>
+                  <h3 className="font-semibold text-lg">
+                    Profile Image (Optional)
+                  </h3>
                   <FormField
                     control={form.control}
                     name="profileImage"
@@ -441,7 +462,7 @@ export default function PartnerRegisterPage() {
                       <FormItem>
                         <FormControl>
                           <ImageUploader
-                            value={field.value || ''}
+                            value={field.value || ""}
                             onChange={field.onChange}
                             folder="partner-profiles"
                             disabled={isLoading}
@@ -453,33 +474,49 @@ export default function PartnerRegisterPage() {
                   />
                 </div>
 
-                {/* Agreement Checkbox (Visual only to match design) */}
-                <div className="flex items-center space-x-2 pt-4">
-                  <div className="h-4 w-4 rounded border border-gray-300 flex items-center justify-center">
-                     {/* We can't implement real functionality without changing schema, so we just show the text mostly */}
-                  </div>
-                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                     I agree to the Terms and Conditions and Privacy Policy of Offers Marketing Platform
-                  </label>
-                </div>
+                {/* Agreement Checkbox */}
+                <FormField
+                  control={form.control}
+                  name="agreeToTerms"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-4">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 accent-[#0B211D] focus:ring-[#0B211D] mt-1"
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-medium leading-none cursor-pointer">
+                          I agree to the Terms and Conditions and Privacy Policy
+                          of Offers Marketing Platform
+                        </FormLabel>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
                 {/* Action Buttons */}
                 <div className="flex gap-4 pt-6">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => router.push('/')}
+                    onClick={() => router.push("/")}
                     disabled={isLoading}
                     className="w-32"
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
-                    className="w-48 bg-[#0B211D] hover:bg-[#153e34] text-white" 
+                  <Button
+                    type="submit"
+                    className="w-48 bg-[#0B211D] hover:bg-[#153e34] text-white"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Submitting...' : 'Submit Application'}
+                    {isLoading ? "Submitting..." : "Submit Application"}
                   </Button>
                 </div>
               </form>
@@ -488,13 +525,19 @@ export default function PartnerRegisterPage() {
 
           {/* Need More Help Section */}
           <div className="mt-20 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">Need More Help?</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900">
+              Need More Help?
+            </h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
               Explore our comprehensive FAQ section for instant answer to common
-              question or visit our Help Center for detailed guides and tutorials.
+              question or visit our Help Center for detailed guides and
+              tutorials.
             </p>
             <div className="flex justify-center gap-4">
-              <Button variant="outline" className="min-w-[140px] border-gray-300">
+              <Button
+                variant="outline"
+                className="min-w-[140px] border-gray-300"
+              >
                 Visit FAQ
               </Button>
               <Button className="min-w-[180px] bg-[#0B211D] hover:bg-[#153e34] text-white">
@@ -503,7 +546,7 @@ export default function PartnerRegisterPage() {
             </div>
           </div>
         </main>
-        
+
         <Footer />
       </div>
     </PublicRoute>

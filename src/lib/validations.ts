@@ -77,36 +77,37 @@ export type MemberRegisterFormData = z.infer<typeof memberRegisterSchema>;
 // Partner Registration Schema
 // ============================================================================
 
-export const partnerRegisterSchema = z
-  .object({
-    email: z.string().email('Please enter a valid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-    partnerName: z.string().min(1, 'Partner name is required'),
-    shopName: z.string().min(1, 'Shop name is required'),
-    location: z.object({
-      street: z.string().min(1, 'Street address is required'),
-      city: z.string().min(1, 'City is required'),
-      district: z.enum(SRI_LANKAN_DISTRICTS_TUPLE, {
-        message: 'Please select a valid district',
-      }),
-      postalCode: z
-        .string()
-        .regex(/^\d{5}$/, 'Postal code must be 5 digits'),
-      coordinates: z.tuple([z.number(), z.number()]).optional(),
+export const partnerRegisterBaseSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string(),
+  partnerName: z.string().min(1, 'Partner name is required'),
+  shopName: z.string().min(1, 'Shop name is required'),
+  location: z.object({
+    street: z.string().min(1, 'Street address is required'),
+    city: z.string().min(1, 'City is required'),
+    district: z.enum(SRI_LANKAN_DISTRICTS_TUPLE, {
+      message: 'Please select a valid district',
     }),
-    category: z.string().min(1, 'Category is required'),
-    contactInfo: z.object({
-      mobileNumber: z
-        .string()
-        .regex(/^(\+94|0)?[0-9]{9}$/, 'Please enter a valid Sri Lankan mobile number'),
-      website: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-    }),
-    profileImage: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
+    postalCode: z.string().regex(/^\d{5}$/, 'Postal code must be 5 digits'),
+    coordinates: z.tuple([z.number(), z.number()]).optional(),
+  }),
+  category: z.string().min(1, 'Category is required'),
+  contactInfo: z.object({
+    mobileNumber: z
+      .string()
+      .regex(/^(\+94|0)?[0-9]{9}$/, 'Please enter a valid Sri Lankan mobile number'),
+    website: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  }),
+  profileImage: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+});
+
+export const partnerRegisterSchema = partnerRegisterBaseSchema.refine(
+  (data) => data.password === data.confirmPassword,
+  {
     message: "Passwords don't match",
     path: ['confirmPassword'],
-  });
+  }
+);
 
 export type PartnerRegisterFormData = z.infer<typeof partnerRegisterSchema>;
