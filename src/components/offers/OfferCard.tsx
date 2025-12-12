@@ -2,9 +2,10 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Heart, Phone } from 'lucide-react';
 import type { Offer } from '@/types';
 
 function formatDate(date: Date | string): string {
@@ -17,12 +18,22 @@ interface OfferCardProps {
 }
 
 export function OfferCard({ offer }: OfferCardProps) {
+  const router = useRouter();
   const expiryDate = new Date(offer.expiryDate);
   const today = new Date();
   const daysUntilExpiry = Math.ceil(
     (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   );
+  const isExpired = daysUntilExpiry < 0;
   const expiresSoon = daysUntilExpiry <= 5 && daysUntilExpiry >= 0;
+
+  const handleRedirectToLogin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = new URL(window.location.href);
+    url.searchParams.set('login', 'true');
+    router.push(url.pathname + url.search);
+  };
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md">
@@ -40,6 +51,7 @@ export function OfferCard({ offer }: OfferCardProps) {
             No Image
           </div>
         )}
+        
         {expiresSoon && (
           <Badge
             variant="destructive"
@@ -48,6 +60,36 @@ export function OfferCard({ offer }: OfferCardProps) {
             Expires Soon
           </Badge>
         )}
+        
+        {isExpired && (
+          <Badge variant="destructive" className="absolute right-2 top-2">
+            Expired
+          </Badge>
+        )}
+        
+        {/* Save Button - Redirects to login */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 left-2 h-8 w-8 bg-background/80 hover:bg-background"
+          onClick={handleRedirectToLogin}
+          title="Save Offer"
+        >
+          <Heart className="h-4 w-4" />
+        </Button>
+
+        {/* Call Button - Redirects to login */}
+        {typeof offer.partner === 'object' && offer.partner?.contactInfo?.mobileNumber && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 left-12 h-8 w-8 bg-background/80 hover:bg-background"
+            onClick={handleRedirectToLogin}
+            title="Call Partner"
+          >
+            <Phone className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -55,28 +97,33 @@ export function OfferCard({ offer }: OfferCardProps) {
 
         <div className="mb-3 flex items-baseline gap-2">
           <span className="text-2xl font-bold text-primary">
-            Rs. {offer.discountedPrice.toFixed(2)}
+            Rs. {offer.discountedPrice?.toFixed(2)}
           </span>
-          <span className="text-sm text-muted-foreground line-through">
-            Rs. {offer.originalPrice.toFixed(2)}
-          </span>
+          {offer.originalPrice && offer.originalPrice > offer.discountedPrice && (
+            <span className="text-sm text-muted-foreground line-through">
+              Rs. {offer.originalPrice.toFixed(2)}
+            </span>
+          )}
         </div>
 
-        <Badge variant="secondary" className="mb-3 w-fit">
-          {offer.discount}% OFF
-        </Badge>
-
-        <div className="mb-4 flex items-center gap-1 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          <span>Expires {formatDate(expiryDate)}</span>
-        </div>
-
-        {typeof offer.partner === 'object' && offer.partner?.location && (
-          <div className="mb-4 flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span>{offer.partner.location.city}, {offer.partner.location.district}</span>
-          </div>
+        {offer.discount && (
+          <Badge variant="secondary" className="mb-3 w-fit">
+            {offer.discount}% OFF
+          </Badge>
         )}
+
+        <div className="space-y-1 mb-4">
+          {typeof offer.partner === 'object' && offer.partner?.location && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3" />
+              <span>{offer.partner.location.city}, {offer.partner.location.district}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            <span>Expires {formatDate(expiryDate)}</span>
+          </div>
+        </div>
 
         <Link href={`/offers/${offer._id}`} className="mt-auto">
           <Button className="w-full" size="default">
@@ -87,4 +134,3 @@ export function OfferCard({ offer }: OfferCardProps) {
     </div>
   );
 }
-
