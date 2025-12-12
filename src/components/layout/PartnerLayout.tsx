@@ -40,6 +40,7 @@ import {
   Star,
 } from 'lucide-react';
 import { useState } from 'react';
+import { Logo } from '@/components/ui/logo';
 
 export function PartnerLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -156,8 +157,9 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
         <div className="flex min-h-screen w-full">
           <Sidebar>
             <SidebarHeader>
-              <div className="flex h-12 items-center px-4">
-                <span className="text-lg font-bold">OfferUs Partner</span>
+              <div className="flex h-12 items-center px-4 gap-2">
+                <Logo width={100} height={32} />
+                <span className="text-sm font-semibold text-muted-foreground pt-1">Partner</span>
               </div>
               <SidebarMenu>
                 <SidebarMenuItem>

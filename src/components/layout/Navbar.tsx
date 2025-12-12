@@ -17,6 +17,7 @@ import { MemberRegisterModal } from '@/components/auth/MemberRegisterModal';
 import { User, LogOut, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/avatar';
+import { Logo } from '@/components/ui/logo';
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -67,8 +68,8 @@ export function Navbar() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
-              <Link href="/" className="text-xl font-bold">
-                OfferUs
+              <Link href="/">
+                <Logo width={120} height={40} />
               </Link>
               <div className="hidden md:flex items-center gap-6">
                 <Link

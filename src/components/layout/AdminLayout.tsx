@@ -30,6 +30,7 @@ import {
   Store,
 } from 'lucide-react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
+import { Logo } from '@/components/ui/logo';
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -89,8 +90,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <Sidebar>
             <SidebarContent>
               <SidebarGroup>
-                <SidebarGroupLabel className="text-lg font-bold">
-                  OfferUs Admin
+                <SidebarGroupLabel className="h-12 flex items-center gap-2 mb-2 w-full">
+                  <Logo width={100} height={32} />
+                  <span className="text-sm font-semibold text-muted-foreground pt-1">Admin</span>
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
