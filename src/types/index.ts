@@ -255,6 +255,7 @@ export interface Review {
     | string;
   rating: number;
   comment?: string;
+  images?: string[];
   partnerResponse?: string;
   responseDate?: string;
   createdAt: string;
