@@ -40,6 +40,14 @@ import {
   Star,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/ui/logo';
 
 export function PartnerLayout({ children }: { children: React.ReactNode }) {
@@ -98,26 +106,6 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
       href: '/partner/reviews',
     },
     {
-      title: 'Notifications',
-      icon: Bell,
-      href: '/partner/notifications',
-      hasSubmenu: true,
-      children: [
-        {
-          title: 'System Notifications',
-          href: '/partner/notifications/system',
-        },
-        {
-          title: 'Offers Notifications',
-          href: '/partner/notifications/offers',
-        },
-        {
-          title: 'Alerts',
-          href: '/partner/notifications/alerts',
-        },
-      ],
-    },
-    {
       title: 'Settings',
       icon: Settings,
       href: '/partner/settings',
@@ -155,42 +143,31 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
     <ProtectedRoute allowedRoles={['partner']} requireApproved={true}>
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
-          <Sidebar>
-            <SidebarHeader>
-              <div className="flex h-12 items-center px-4 gap-2">
+          <Sidebar className="bg-[#f4f4f5] border-r-0">
+            <SidebarHeader className="h-40 justify-center">
+              <div className="flex flex-col items-center px-4 gap-4">
                 <Logo width={100} height={32} />
-                <span className="text-sm font-semibold text-muted-foreground pt-1">Partner</span>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground overflow-hidden">
+                   {user?.partner?.profileImage ? (
+                      <img 
+                        src={user.partner.profileImage} 
+                        alt={user.partner.partnerName} 
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-6 w-6" />
+                    )}
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">{user?.partner?.partnerName}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
               </div>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton size="lg" className="h-auto py-4 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                    <div className="flex flex-col items-center gap-2 w-full">
-                      <div className="flex aspect-square size-16 items-center justify-center rounded-full bg-primary text-primary-foreground overflow-hidden">
-                        {user?.partner?.profileImage ? (
-                          <img 
-                            src={user.partner.profileImage} 
-                            alt={user.partner.partnerName} 
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <User className="size-8" />
-                        )}
-                      </div>
-                      <div className="grid flex-1 text-center text-sm leading-tight">
-                        <span className="truncate font-semibold text-base">
-                          {user?.partner?.partnerName || 'Partner Portal'}
-                        </span>
-                        <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
-                      </div>
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupContent>
-                  <SidebarMenu>
+                  <SidebarMenu className="gap-2 px-2">
                     {menuItems.map((item) => {
                       const isItemActive = isActive(item.href);
                       const isOpen = openMenus[item.title] ?? false;
@@ -203,9 +180,10 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
                               <SidebarMenuButton
                                 onClick={() => toggleMenu(item.title)}
                                 isActive={isItemActive}
+                                className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-gray-200"
                               >
                                 <item.icon className="mr-2 h-4 w-4" />
-                                <span>{item.title}</span>
+                                <span className="font-medium">{item.title}</span>
                                 <ChevronRight
                                   className={`ml-auto h-4 w-4 transition-transform ${
                                     isOpen ? 'rotate-90' : ''
@@ -219,6 +197,7 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
                                       <SidebarMenuSubButton
                                         asChild
                                         isActive={pathname === child.href}
+                                        className="data-[active=true]:text-primary font-medium"
                                       >
                                         <Link href={child.href}>
                                           <span>{child.title}</span>
@@ -233,10 +212,11 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
                             <SidebarMenuButton
                               asChild
                               isActive={isItemActive}
+                              className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-gray-200"
                             >
                               <Link href={item.href}>
                                 <item.icon className="mr-2 h-4 w-4" />
-                                <span>{item.title}</span>
+                                <span className="font-medium">{item.title}</span>
                               </Link>
                             </SidebarMenuButton>
                           )}
@@ -247,18 +227,44 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
                 </SidebarGroupContent>
               </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarFooter>
           </Sidebar>
-          <SidebarInset>
+          <SidebarInset className="bg-white">
+            <header className="flex h-16 shrink-0 items-center justify-end gap-4 border-b px-6 bg-white">
+              <Link href="/partner/notifications" className="relative">
+                <Bell className="h-6 w-6 text-gray-700" />
+                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 border-2 border-white"></span>
+              </Link>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="focus:outline-none">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground overflow-hidden hover:opacity-90 transition-opacity cursor-pointer">
+                      {user?.partner?.profileImage ? (
+                        <img 
+                          src={user.partner.profileImage} 
+                          alt={user.partner.partnerName} 
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-5 w-5" />
+                      )}
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.partner?.partnerName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </header>
             <main className="flex-1 p-8">{children}</main>
           </SidebarInset>
         </div>

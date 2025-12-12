@@ -30,10 +30,15 @@ export interface NotificationsResponse {
 export const notificationService = {
   getNotifications: async (
     page = 1,
-    limit = 10
+    limit = 10,
+    type?: string | string[]
   ): Promise<ApiResponse<NotificationsResponse>> => {
+    const params: any = { page, limit };
+    if (type) {
+      params.type = Array.isArray(type) ? type.join(',') : type;
+    }
     const response = await apiClient.get<ApiResponse<NotificationsResponse>>('/notifications', {
-      params: { page, limit },
+      params,
     });
     return response.data;
   },
