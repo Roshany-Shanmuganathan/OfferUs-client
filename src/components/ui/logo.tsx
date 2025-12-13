@@ -29,7 +29,7 @@ export function Logo({ className, width = 120, height = 40 }: LogoProps) {
   // Dark background -> light logo
   // Light background -> dark logo
   const isDark = resolvedTheme === 'dark';
-  const src = isDark ? '/assets/light.png' : '/assets/dark.png';
+  const src = isDark ? '/assets/logo-light.png' : '/assets/logo-dark.png';
 
   return (
     <Image

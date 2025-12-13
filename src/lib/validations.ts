@@ -57,14 +57,16 @@ export const memberRegisterSchema = z
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
     firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    lastName: z.string().optional(),
     mobileNumber: z
       .string()
       .regex(
         /^(\+94|0)?[0-9]{9}$/,
         "Please enter a valid Sri Lankan mobile number"
-      ),
-    address: z.string().min(1, "Address is required"),
+      )
+      .optional()
+      .or(z.literal("")),
+    address: z.string().optional(),
     dateOfBirth: z.string().optional(),
     gender: z.enum(["male", "female", "other"]).optional(),
     profilePicture: z

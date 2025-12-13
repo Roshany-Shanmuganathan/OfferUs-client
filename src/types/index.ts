@@ -116,9 +116,9 @@ export interface MemberRegisterRequest {
   email: string;
   password: string;
   firstName: string;
-  lastName: string;
-  mobileNumber: string;
-  address: string;
+  lastName?: string;
+  mobileNumber?: string;
+  address?: string;
   dateOfBirth?: string;
   gender?: string;
   profilePicture?: string;

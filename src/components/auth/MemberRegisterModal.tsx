@@ -20,14 +20,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ImageUploader } from '@/components/ui/image-uploader';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   memberRegisterSchema,
   type MemberRegisterFormData,
@@ -35,18 +27,24 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { ApiError } from '@/types';
+import Image from 'next/image';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface MemberRegisterModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onLoginClick?: () => void;
 }
 
 export function MemberRegisterModal({
   open,
   onOpenChange,
+  onLoginClick,
 }: MemberRegisterModalProps) {
   const { registerMember } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<MemberRegisterFormData>({
     resolver: zodResolver(memberRegisterSchema),
@@ -100,203 +98,177 @@ export function MemberRegisterModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create Member Account</DialogTitle>
-          <DialogDescription>
-            Fill in your details to create a member account.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} disabled={isLoading} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} disabled={isLoading} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      {...field}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
-              control={form.control}
-              name="mobileNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mobile Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="0771234567"
-                      {...field}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="123 Main Street"
-                      {...field}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="dateOfBirth"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date of Birth (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender (Optional)</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={isLoading}
-                    >
+      <DialogContent className="sm:max-w-[850px] p-0 overflow-hidden bg-[#F4F4F5]">
+        <div className="grid md:grid-cols-2 gap-0">
+          
+          {/* Left Side - Form */}
+          <div className="p-8 md:p-12 bg-[#F4F4F5]">
+            <DialogHeader className="mb-8 text-center md:text-left">
+              <DialogTitle className="text-4xl md:text-5xl font-extrabold text-center text-[#102219]">Sign up</DialogTitle>
+              <DialogDescription className="hidden">
+                Create your account
+              </DialogDescription>
+            </DialogHeader>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
+                        <Input 
+                          placeholder="First Name" 
+                          {...field} 
+                          disabled={isLoading}
+                          className="bg-gray-200/50 border-gray-300 text-black focus-visible:ring-1 focus-visible:ring-[#102219] h-12"
+                          tabIndex={1}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Email Address"
+                          {...field}
+                          disabled={isLoading}
+                          className="bg-gray-200/50 border-gray-300 text-black focus-visible:ring-1 focus-visible:ring-[#102219] h-12"
+                          tabIndex={2}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
+                            {...field}
+                            disabled={isLoading}
+                            className="bg-gray-200/50 border-gray-300 text-black focus-visible:ring-1 focus-visible:ring-[#102219] h-12 pr-10"
+                            tabIndex={3}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm Password"
+                            {...field}
+                            disabled={isLoading}
+                            className="bg-gray-200/50 border-gray-300 text-black focus-visible:ring-1 focus-visible:ring-[#102219] h-12 pr-10"
+                            tabIndex={4}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                            tabIndex={-1}
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-[#102219] hover:bg-[#1a3326] text-white h-12 text-base font-medium cursor-pointer mt-4" 
+                  disabled={isLoading}
+                  tabIndex={5}
+                >
+                  {isLoading ? 'Creating account...' : 'Create Account'}
+                </Button>
+
+                <div className="text-center text-xs text-gray-600 mt-6">
+                  Already have an account?{' '}
+                  <button 
+                    type="button" 
+                    className="font-bold text-black hover:underline cursor-pointer"
+                    tabIndex={6}
+                    onClick={() => {
+                      if (onLoginClick) {
+                        onLoginClick();
+                      } else {
+                        onOpenChange(false);
+                        toast.info('Please open the login modal');
+                      }
+                    }}
+                  >
+                    Log in
+                  </button>
+                </div>
+              </form>
+            </Form>
+          </div>
+
+          {/* Right Side - Branding */}
+          <div className="hidden md:flex flex-col items-center justify-center bg-[#102219] text-white p-10 relative">
+            <div className="flex flex-col items-center justify-center flex-1 space-y-8">
+              <div className="text-center">
+                <div className="relative w-48 h-32 lg:w-64 lg:h-40 mb-0">
+                  <Image 
+                    src="/assets/logo-light.png" 
+                    alt="OfferUs Logo" 
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+              </div>
+              
+              <div className="text-center space-y-1">
+                <h2 className="text-2xl font-medium">Join us today.</h2>
+                <p className="text-base text-gray-400">Create an account to start saving</p>
+              </div>
+
+              <div className="relative w-24 h-24 lg:w-28 lg:h-28 bg-[var(--color-gold)] [mask-image:url(/assets/login-offer-icon.png)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]">
+                 {/* Icon rendered via mask to apply color */}
+              </div>
             </div>
-            <div className="space-y-4 border-t pt-4">
-              <h3 className="font-semibold">Profile Picture (Optional)</h3>
-              <FormField
-                control={form.control}
-                name="profilePicture"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <ImageUploader
-                        value={field.value || ''}
-                        onChange={field.onChange}
-                        folder="member-profiles"
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create Account'}
-            </Button>
-          </form>
-        </Form>
+          </div>
+
+        </div>
       </DialogContent>
     </Dialog>
   );

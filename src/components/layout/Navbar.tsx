@@ -135,18 +135,21 @@ export function Navbar() {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="flex items-center gap-2 pl-0 pr-2 rounded-full"
+                        size="icon"
+                        className="rounded-full"
                       >
                         <Avatar className="h-9 w-9">
-                          <AvatarImage
-                            src={getProfileImage() || undefined}
-                            alt={getDisplayName()}
-                          />
-                          <AvatarFallback>{getInitials()}</AvatarFallback>
+                          {getProfileImage() && (
+                            <AvatarImage
+                              src={getProfileImage() || undefined}
+                              alt={getDisplayName()}
+                              className="object-cover"
+                            />
+                          )}
+                          <AvatarFallback className="bg-gray-100 flex items-center justify-center text-gray-700 font-bold text-lg w-full h-full">
+                            {getInitials().charAt(0).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
-                        <span className="hidden sm:inline font-medium">
-                          {getDisplayName()}
-                        </span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
@@ -229,10 +232,21 @@ export function Navbar() {
         </div>
       </nav>
 
-      <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+      <LoginModal 
+        open={loginOpen} 
+        onOpenChange={setLoginOpen} 
+        onSignupClick={() => {
+          setLoginOpen(false);
+          setMemberRegisterOpen(true);
+        }}
+      />
       <MemberRegisterModal
         open={memberRegisterOpen}
         onOpenChange={setMemberRegisterOpen}
+        onLoginClick={() => {
+          setMemberRegisterOpen(false);
+          setLoginOpen(true);
+        }}
       />
     </>
   );
