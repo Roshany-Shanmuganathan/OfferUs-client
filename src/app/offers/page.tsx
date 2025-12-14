@@ -1,11 +1,9 @@
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { PublicRoute } from '@/components/layout/PublicRoute';
-import { LoginTrigger } from '@/components/layout/LoginTrigger';
 import { OfferCard } from '@/components/offers/OfferCard';
 import { OfferFilters } from '@/components/offers/OfferFilters';
 import { fetchOffersServer, fetchCategoriesServer } from '@/services/offer.service';
-import { Suspense } from 'react';
 
 interface OffersPageProps {
   searchParams: Promise<{
@@ -72,9 +70,6 @@ export default async function OffersPage({ searchParams }: OffersPageProps) {
     <PublicRoute>
       <div className="flex min-h-screen flex-col">
         <Navbar />
-        <Suspense fallback={null}>
-          <LoginTrigger />
-        </Suspense>
         <main className="flex-1">
           <div className="container mx-auto px-4 py-16">
             <div className="mb-8">

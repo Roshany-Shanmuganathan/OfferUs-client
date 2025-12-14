@@ -23,9 +23,9 @@ import { authService } from "@/services/auth.service";
 interface AuthContextType {
   user: UserWithDetails | null;
   loading: boolean;
-  login: (email: string, password: string, returnTo?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  registerMember: (data: MemberRegisterRequest, returnTo?: string) => Promise<void>;
+  registerMember: (data: MemberRegisterRequest) => Promise<void>;
   registerPartner: (data: PartnerRegisterRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
@@ -94,9 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const login = async (email: string, password: string, returnTo?: string) => {
+  const login = async (email: string, password: string) => {
     try {
-      console.log('[AuthContext] 🔐 login() called with returnTo:', returnTo);
       const response = await authService.login({ email, password });
       if (response.success) {
         // Backend sets HTTP-only cookie automatically
@@ -119,38 +118,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           member: response.data.member,
         });
 
-        // Redirect logic:
-        // Case 1: If returnTo is provided (action-based login), redirect back to that page
-        // Case 2: If no returnTo (navbar login), redirect to dashboard based on role
+        // Redirect based on role - use window.location for immediate navigation
         if (typeof window !== "undefined") {
-          // Check if returnTo is a valid non-empty string and starts with / (relative path)
-          const trimmedReturnTo = returnTo?.trim();
-          const hasReturnTo = trimmedReturnTo && trimmedReturnTo !== '' && trimmedReturnTo.startsWith('/');
-          
-          console.log('[AuthContext] 🔄 Redirect decision:');
-          console.log('  - returnTo parameter:', returnTo);
-          console.log('  - trimmedReturnTo:', trimmedReturnTo);
-          console.log('  - hasReturnTo:', hasReturnTo);
-          console.log('  - user role:', response.data.user.role);
-          
-          if (hasReturnTo) {
-            // Action-based login: redirect back to the offer page
-            // Use window.location.href for a full page reload to ensure clean state
-            console.log('[AuthContext] ✅ REDIRECTING TO returnTo:', trimmedReturnTo);
-            window.location.href = trimmedReturnTo;
-            return; // Exit early to prevent any other redirects
+          if (response.data.user.role === "admin") {
+            window.location.href = "/admin";
+          } else if (response.data.user.role === "partner") {
+            window.location.href = "/partner";
+          } else if (response.data.user.role === "member") {
+            window.location.href = "/member";
           } else {
-            // Navbar login: redirect to dashboard based on role
-            console.log('[AuthContext] ❌ No valid returnTo, redirecting to dashboard for role:', response.data.user.role);
-            if (response.data.user.role === "admin") {
-              window.location.href = "/admin";
-            } else if (response.data.user.role === "partner") {
-              window.location.href = "/partner";
-            } else if (response.data.user.role === "member") {
-              window.location.href = "/member";
-            } else {
-              window.location.href = "/";
-            }
+            window.location.href = "/";
           }
         }
       } else {
@@ -181,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerMember = async (data: MemberRegisterRequest, returnTo?: string) => {
+  const registerMember = async (data: MemberRegisterRequest) => {
     try {
       const response = await authService.registerMember(data);
       if (response.success) {
@@ -199,25 +176,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           member: response.data.member,
         });
 
-        // Redirect logic:
-        // Case 1: If returnTo is provided (action-based signup), redirect back to that page
-        // Case 2: If no returnTo (navbar signup), redirect to member dashboard
+        // Auto-login after member registration
         if (typeof window !== "undefined") {
-          // Check if returnTo is a valid non-empty string and starts with / (relative path)
-          const trimmedReturnTo = returnTo?.trim();
-          const hasReturnTo = trimmedReturnTo && trimmedReturnTo !== '' && trimmedReturnTo.startsWith('/');
-          
-          console.log('[AuthContext] Signup redirect - returnTo:', returnTo, 'trimmedReturnTo:', trimmedReturnTo, 'hasReturnTo:', hasReturnTo);
-          
-          if (hasReturnTo) {
-            // Action-based signup: redirect back to the offer page
-            console.log('[AuthContext] Redirecting to returnTo:', trimmedReturnTo);
-            window.location.href = trimmedReturnTo;
-          } else {
-            // Navbar signup: redirect to member dashboard
-            console.log('[AuthContext] No valid returnTo, redirecting to member dashboard');
-            window.location.href = "/member";
-          }
+          window.location.href = "/member";
         }
       } else {
         throw new Error(response.message || "Registration failed");

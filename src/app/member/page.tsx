@@ -2,34 +2,36 @@
 
 import { MemberLayout } from '@/components/layout/MemberLayout';
 import { OfferCard } from '@/components/member/OfferCard';
-import { OfferFilters } from '@/components/offers/OfferFilters';
 import { browseOffers } from '@/services/offer.service';
 import { savedOfferService } from '@/services/savedOffer.service';
 import { partnerOfferService } from '@/services/offer.service';
 import { useSavedOffers } from '@/contexts/SavedOffersContext';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { Search, MapPin } from 'lucide-react';
 import type { Offer } from '@/types';
 
-function MemberDashboardContent() {
-  const searchParams = useSearchParams();
+export default function MemberDashboard() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [savedOfferIds, setSavedOfferIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<string>('all');
+  const [district, setDistrict] = useState<string>('all');
+  const [location, setLocation] = useState<string>('');
   const [categories, setCategories] = useState<string[]>([]);
   const { refreshCount } = useSavedOffers();
-
-  // Get filter values from URL params
-  const search = searchParams.get('search') || '';
-  const category = searchParams.get('category') || 'all';
-  const district = searchParams.get('district') || 'all';
-  const location = searchParams.get('location') || '';
-  const sortBy = searchParams.get('sortBy') || 'newest';
 
   const fetchOffers = async () => {
     try {
@@ -39,7 +41,6 @@ function MemberDashboardContent() {
       if (category && category !== 'all') params.category = category;
       if (district && district !== 'all') params.district = district;
       if (location) params.location = location;
-      if (sortBy) params.sortBy = sortBy;
 
       const data = await browseOffers(params);
       setOffers(data.offers || []);
@@ -63,7 +64,18 @@ function MemberDashboardContent() {
 
   useEffect(() => {
     fetchOffers();
-  }, [search, category, district, location, sortBy]);
+  }, [category, district]);
+
+  // Debounce location search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (location || location === '') {
+        fetchOffers();
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [location]);
 
   useEffect(() => {
     // Fetch categories
@@ -114,129 +126,124 @@ function MemberDashboardContent() {
     }
   };
 
-  // Define all Sri Lankan districts for location filtering
-  const districts = [
-    'Colombo',
-    'Gampaha',
-    'Kalutara',
-    'Kandy',
-    'Matale',
-    'Nuwara Eliya',
-    'Galle',
-    'Matara',
-    'Hambantota',
-    'Jaffna',
-    'Kilinochchi',
-    'Mannar',
-    'Vavuniya',
-    'Mullaitivu',
-    'Batticaloa',
-    'Ampara',
-    'Trincomalee',
-    'Kurunegala',
-    'Puttalam',
-    'Anuradhapura',
-    'Polonnaruwa',
-    'Badulla',
-    'Moneragala',
-    'Ratnapura',
-    'Kegalle',
-  ];
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchOffers();
+  };
 
   return (
     <MemberLayout>
-      <main className="flex-1">
-        <div className="mx-auto">
-          {/* Hero Section - Same as home page */}
-          <div className="mb-12 text-center bg-primary space-y-6 px-4 py-16">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-secondary">
-              Welcome to OfferUs
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Your trusted platform for discovering the best offers and deals
-              from verified partners.
-            </p>
-          </div>
-
-          {/* Filters - Using OfferFilters component */}
-          <div className="mb-8">
-            <OfferFilters categories={categories} districts={districts} />
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-                <div key={i} className="border rounded-lg overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
-                  <div className="p-4 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : offers.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">
-                No offers found matching your criteria.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
-                {offers.map((offer) => (
-                  <OfferCard
-                    key={offer._id}
-                    offer={offer}
-                    isSaved={savedOfferIds.has(offer._id)}
-                    onSave={handleSave}
-                    onUnsave={handleUnsave}
-                    showSaveButton={true}
-                  />
-                ))}
-              </div>
-
-              <div className="flex justify-center mb-5">
-                <Link href="/offers">
-                  <Button size="lg" variant="default">
-                    Browse More
-                  </Button>
-                </Link>
-              </div>
-            </>
-          )}
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Member Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Discover and manage your offers</p>
         </div>
-      </main>
-    </MemberLayout>
-  );
-}
 
-export default function MemberDashboard() {
-  return (
-    <Suspense fallback={
-      <MemberLayout>
-        <main className="flex-1">
-          <div className="mx-auto">
-            <div className="mb-12 text-center bg-primary space-y-6 px-4 py-16">
-              <Skeleton className="h-16 w-64 mx-auto" />
-              <Skeleton className="h-6 w-96 mx-auto" />
+        <div className="mb-6 flex flex-col md:flex-row gap-4">
+          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search offers..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-                <div key={i} className="border rounded-lg overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
-                  <div className="p-4 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                </div>
+            <Button type="submit">Search</Button>
+          </form>
+
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
               ))}
-            </div>
+            </SelectContent>
+          </Select>
+
+          <div className="relative w-full md:w-48">
+            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search location..."
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </main>
-      </MemberLayout>
-    }>
-      <MemberDashboardContent />
-    </Suspense>
+
+          <Select value={district} onValueChange={setDistrict}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="District" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Districts</SelectItem>
+              <SelectItem value="Colombo">Colombo</SelectItem>
+              <SelectItem value="Gampaha">Gampaha</SelectItem>
+              <SelectItem value="Kalutara">Kalutara</SelectItem>
+              <SelectItem value="Kandy">Kandy</SelectItem>
+              <SelectItem value="Matale">Matale</SelectItem>
+              <SelectItem value="Nuwara Eliya">Nuwara Eliya</SelectItem>
+              <SelectItem value="Galle">Galle</SelectItem>
+              <SelectItem value="Matara">Matara</SelectItem>
+              <SelectItem value="Hambantota">Hambantota</SelectItem>
+              <SelectItem value="Jaffna">Jaffna</SelectItem>
+              <SelectItem value="Kilinochchi">Kilinochchi</SelectItem>
+              <SelectItem value="Mannar">Mannar</SelectItem>
+              <SelectItem value="Vavuniya">Vavuniya</SelectItem>
+              <SelectItem value="Mullaitivu">Mullaitivu</SelectItem>
+              <SelectItem value="Batticaloa">Batticaloa</SelectItem>
+              <SelectItem value="Ampara">Ampara</SelectItem>
+              <SelectItem value="Trincomalee">Trincomalee</SelectItem>
+              <SelectItem value="Kurunegala">Kurunegala</SelectItem>
+              <SelectItem value="Puttalam">Puttalam</SelectItem>
+              <SelectItem value="Anuradhapura">Anuradhapura</SelectItem>
+              <SelectItem value="Polonnaruwa">Polonnaruwa</SelectItem>
+              <SelectItem value="Badulla">Badulla</SelectItem>
+              <SelectItem value="Moneragala">Moneragala</SelectItem>
+              <SelectItem value="Ratnapura">Ratnapura</SelectItem>
+              <SelectItem value="Kegalle">Kegalle</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="border rounded-lg overflow-hidden">
+                <Skeleton className="h-48 w-full" />
+                <div className="p-4 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : offers.length === 0 ? (
+          <div className="text-center py-12 border rounded-lg">
+            <p className="text-muted-foreground">No offers found</p>
+            <p className="text-sm text-muted-foreground mt-2">Try adjusting your search or filters</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {offers.map((offer) => (
+              <OfferCard
+                key={offer._id}
+                offer={offer}
+                isSaved={savedOfferIds.has(offer._id)}
+                onSave={handleSave}
+                onUnsave={handleUnsave}
+                showSaveButton={true}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </MemberLayout>
   );
 }

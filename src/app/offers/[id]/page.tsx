@@ -16,9 +16,7 @@ import {
 } from '@/services/offer.service';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { savedOfferService } from '@/services/savedOffer.service';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,15 +49,12 @@ function formatDateShort(date: Date | string): string {
 export default function OfferDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { isAuthenticated, user } = useAuth();
   const id = params.id as string;
 
   const [offer, setOffer] = useState<Offer | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [executingAction, setExecutingAction] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -98,95 +93,10 @@ export default function OfferDetailsPage() {
     }
   }, [id]);
 
-  // Execute action after login redirect
-  useEffect(() => {
-    const executeAction = async () => {
-      const action = searchParams.get('action');
-      
-      // Only execute if user is authenticated and action is present
-      if (!isAuthenticated || !action || executingAction || !offer) {
-        return;
-      }
-
-      // Only execute for members (save/call actions are member-only)
-      if (user?.role !== 'member') {
-        return;
-      }
-
-      setExecutingAction(true);
-
-      try {
-        if (action === 'save') {
-          // Save the offer
-          await savedOfferService.saveOffer(id);
-          toast.success('Offer saved successfully!');
-          // Remove action parameter from URL
-          const url = new URL(window.location.href);
-          url.searchParams.delete('action');
-          router.replace(url.pathname + url.search);
-        } else if (action === 'call') {
-          // For call action, just remove the action parameter
-          // The call button will work normally for authenticated users
-          const url = new URL(window.location.href);
-          url.searchParams.delete('action');
-          router.replace(url.pathname + url.search);
-        }
-      } catch (error: any) {
-        const errorMessage =
-          error.response?.data?.message ||
-          error.message ||
-          'Failed to execute action';
-        toast.error(errorMessage);
-        // Remove action parameter even on error
-        const url = new URL(window.location.href);
-        url.searchParams.delete('action');
-        router.replace(url.pathname + url.search);
-      } finally {
-        setExecutingAction(false);
-      }
-    };
-
-    executeAction();
-  }, [isAuthenticated, user, searchParams, offer, id, router, executingAction]);
-
-  const handleAction = async (action: 'call' | 'save') => {
-    // If not authenticated, redirect to login with returnTo
-    if (!isAuthenticated || user?.role !== 'member') {
-      const returnToUrl = new URL(window.location.pathname, window.location.origin);
-      returnToUrl.searchParams.set('action', action);
-      
-      // Build the returnTo value (pathname + search params)
-      const returnToValue = returnToUrl.pathname + returnToUrl.search;
-      
-      console.log('[OfferDetailsPage] handleAction - action:', action, 'returnToValue:', returnToValue, 'currentPath:', window.location.pathname);
-      
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('login', 'true');
-      currentUrl.searchParams.set('returnTo', returnToValue);
-      
-      console.log('[OfferDetailsPage] Redirecting to:', currentUrl.pathname + currentUrl.search);
-      router.push(currentUrl.pathname + currentUrl.search);
-      return;
-    }
-
-    // If authenticated, execute action directly
-    if (action === 'call' && partner?.contactInfo?.mobileNumber) {
-      window.location.href = `tel:${partner.contactInfo.mobileNumber}`;
-    } else if (action === 'save') {
-      try {
-        setExecutingAction(true);
-        await savedOfferService.saveOffer(id);
-        toast.success('Offer saved successfully!');
-      } catch (error: any) {
-        const errorMessage =
-          error.response?.data?.message ||
-          error.message ||
-          'Failed to save offer';
-        toast.error(errorMessage);
-      } finally {
-        setExecutingAction(false);
-      }
-    }
+  const handleRedirectToLogin = (action: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('login', 'true');
+    router.push(url.pathname + url.search);
   };
 
   const handleReviewSuccess = () => {
@@ -380,15 +290,13 @@ export default function OfferDetailsPage() {
                     </div>
                   </div>
 
-                  {/* Buttons - Check auth and execute or redirect to login */}
+                  {/* Buttons - Redirect to login */}
                   <div className="flex gap-3">
                     {partner?.contactInfo?.mobileNumber && (
                       <Button 
-                        variant="default"
-                        className="flex-1" 
+                        className="flex-1 bg-blue-600 hover:bg-blue-700" 
                         size="lg"
-                        onClick={() => handleAction('call')}
-                        disabled={executingAction}
+                        onClick={() => handleRedirectToLogin('call')}
                       >
                         <Phone className="mr-2 h-4 w-4" />
                         Call Shop
@@ -397,13 +305,12 @@ export default function OfferDetailsPage() {
                     
                     <Button
                       variant="default"
-                      onClick={() => handleAction('save')}
-                      className="flex-1"
+                      onClick={() => handleRedirectToLogin('save')}
+                      className="flex-1 bg-orange-500 hover:bg-orange-600"
                       size="lg"
-                      disabled={executingAction}
                     >
                       <Heart className="mr-2 h-4 w-4" />
-                      {executingAction ? 'Saving...' : 'Save Offer'}
+                      Save Offer
                     </Button>
                   </div>
                   

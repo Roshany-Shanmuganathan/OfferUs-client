@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -33,18 +33,12 @@ interface LoginModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSignupClick?: () => void;
-  returnTo?: string;
 }
 
-export function LoginModal({ open, onOpenChange, onSignupClick, returnTo }: LoginModalProps) {
+export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProps) {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  // Log when returnTo prop changes
-  useEffect(() => {
-    console.log('[LoginModal] returnTo prop changed to:', returnTo);
-  }, [returnTo]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -57,14 +51,9 @@ export function LoginModal({ open, onOpenChange, onSignupClick, returnTo }: Logi
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      // Pass returnTo to login function - this will handle the redirect
-      console.log('[LoginModal] ✅ onSubmit - returnTo prop value:', returnTo);
-      console.log('[LoginModal] ✅ Calling login() with returnTo:', returnTo);
-      await login(data.email, data.password, returnTo);
+      await login(data.email, data.password);
       toast.success('Login successful!');
       form.reset();
-      // Don't close modal here - let the redirect in AuthContext handle it
-      // The redirect will happen before this line executes anyway
       onOpenChange(false);
     } catch (error: unknown) {
       // Handle field-specific errors from API

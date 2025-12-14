@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Heart, Phone, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Heart, Phone } from 'lucide-react';
 import type { Offer } from '@/types';
 
 function formatDate(date: Date | string): string {
@@ -27,29 +27,12 @@ export function OfferCard({ offer }: OfferCardProps) {
   const isExpired = daysUntilExpiry < 0;
   const expiresSoon = daysUntilExpiry <= 5 && daysUntilExpiry >= 0;
 
-  const handleRedirectToLogin = (e: React.MouseEvent, action?: 'call' | 'save') => {
+  const handleRedirectToLogin = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Build returnTo URL pointing to the offer detail page with action parameter
-    const offerDetailPath = `/offers/${offer._id}`;
-    const returnToUrl = new URL(offerDetailPath, window.location.origin);
-    if (action) {
-      returnToUrl.searchParams.set('action', action);
-    }
-    
-    // Build the returnTo value (pathname + search params)
-    const returnToValue = returnToUrl.pathname + returnToUrl.search;
-    
-    console.log('[OfferCard] handleRedirectToLogin - action:', action, 'returnToValue:', returnToValue);
-    
-    // Redirect to current page with login=true and returnTo parameter
-    // searchParams.set() will automatically encode the value
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('login', 'true');
-    currentUrl.searchParams.set('returnTo', returnToValue);
-    
-    console.log('[OfferCard] Redirecting to:', currentUrl.pathname + currentUrl.search);
-    router.push(currentUrl.pathname + currentUrl.search);
+    const url = new URL(window.location.href);
+    url.searchParams.set('login', 'true');
+    router.push(url.pathname + url.search);
   };
 
   return (
@@ -89,7 +72,7 @@ export function OfferCard({ offer }: OfferCardProps) {
           variant="ghost"
           size="icon"
           className="absolute top-2 left-2 h-8 w-8 bg-background/80 hover:bg-background"
-          onClick={(e) => handleRedirectToLogin(e, 'save')}
+          onClick={handleRedirectToLogin}
           title="Save Offer"
         >
           <Heart className="h-4 w-4" />
@@ -101,7 +84,7 @@ export function OfferCard({ offer }: OfferCardProps) {
             variant="ghost"
             size="icon"
             className="absolute top-2 left-12 h-8 w-8 bg-background/80 hover:bg-background"
-            onClick={(e) => handleRedirectToLogin(e, 'call')}
+            onClick={handleRedirectToLogin}
             title="Call Partner"
           >
             <Phone className="h-4 w-4" />
@@ -145,7 +128,6 @@ export function OfferCard({ offer }: OfferCardProps) {
         <Link href={`/offers/${offer._id}`} className="mt-auto">
           <Button className="w-full" size="default">
             View Details
-            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       </div>
