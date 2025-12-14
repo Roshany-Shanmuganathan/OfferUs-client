@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Heart, Phone } from 'lucide-react';
+import { Calendar, MapPin, Heart, Phone, ArrowRight } from 'lucide-react';
 import type { Offer } from '@/types';
 
 function formatDate(date: Date | string): string {
@@ -145,6 +145,7 @@ export function OfferCard({ offer }: OfferCardProps) {
         <Link href={`/offers/${offer._id}`} className="mt-auto">
           <Button className="w-full" size="default">
             View Details
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       </div>

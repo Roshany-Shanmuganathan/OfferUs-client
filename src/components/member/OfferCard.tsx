@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MapPin, Calendar } from 'lucide-react';
+import { Heart, MapPin, Calendar, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Offer } from '@/types';
@@ -125,6 +125,7 @@ export function OfferCard({
         <Link href={`/member/offers/${offer._id}`} className="mt-auto">
           <Button className="w-full" size="default">
             View Details
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       </div>

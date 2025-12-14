@@ -384,7 +384,8 @@ export default function OfferDetailsPage() {
                   <div className="flex gap-3">
                     {partner?.contactInfo?.mobileNumber && (
                       <Button 
-                        className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                        variant="default"
+                        className="flex-1" 
                         size="lg"
                         onClick={() => handleAction('call')}
                         disabled={executingAction}
@@ -397,7 +398,7 @@ export default function OfferDetailsPage() {
                     <Button
                       variant="default"
                       onClick={() => handleAction('save')}
-                      className="flex-1 bg-orange-500 hover:bg-orange-600"
+                      className="flex-1"
                       size="lg"
                       disabled={executingAction}
                     >
