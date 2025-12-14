@@ -70,9 +70,6 @@ export const fetchOffersServer = async (options: {
       cache: 'no-store',
     });
 
-    console.log('[fetchOffersServer] Response status:', response.status);
-    console.log('[fetchOffersServer] Response headers:', Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
       const text = await response.text();
       console.error('[fetchOffersServer] Error response:', text.substring(0, 500));
@@ -80,8 +77,6 @@ export const fetchOffersServer = async (options: {
     }
 
     const text = await response.text();
-    console.log('[fetchOffersServer] Response text (first 200 chars):', text.substring(0, 200));
-    
     const data: ApiResponse<OfferBrowseResponse> = JSON.parse(text);
     return {
       offers: data.data.offers,
@@ -90,9 +85,21 @@ export const fetchOffersServer = async (options: {
   } catch (error) {
     console.error('[fetchOffersServer] Error:', error);
     if (error instanceof Error) {
-      console.error('[fetchOffersServer] Error message:', error.message);
-      console.error('[fetchOffersServer] Error stack:', error.stack);
+      // Check if it's a network error (fetch failed)
+      if (error.message === 'fetch failed' || error.message.includes('ECONNREFUSED') || error.message.includes('Failed to fetch')) {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        console.error(
+          `[fetchOffersServer] Network error: Cannot connect to API server at ${baseUrl}. ` +
+          `Please ensure:\n` +
+          `1. The backend server is running\n` +
+          `2. The API URL is correct (check NEXT_PUBLIC_API_URL environment variable)\n` +
+          `3. The server is accessible from this environment`
+        );
+      } else {
+        console.error('[fetchOffersServer] Error message:', error.message);
+      }
     }
+    // Return empty array instead of throwing to prevent page crash
     return { offers: [], pagination: null };
   }
 };

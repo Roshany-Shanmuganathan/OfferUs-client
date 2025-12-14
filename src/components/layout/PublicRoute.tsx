@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface PublicRouteProps {
@@ -11,20 +11,37 @@ interface PublicRouteProps {
 export function PublicRoute({ children }: PublicRouteProps) {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (loading) return;
 
-    // If user is authenticated, redirect to their portal
+    // Define routes that authenticated users can access (offer pages, home, etc.)
+    const allowedRoutesForMembers = [
+      '/',
+      '/offers',
+      '/about',
+      '/contact',
+    ];
+    
+    // Check if current path is an offer detail page or allowed route
+    const isOfferDetailPage = pathname?.startsWith('/offers/');
+    const isAllowedRoute = pathname && allowedRoutesForMembers.some(route => 
+      route === '/' ? pathname === '/' : pathname.startsWith(route)
+    );
+    const canViewPage = isOfferDetailPage || isAllowedRoute;
+
+    // If user is authenticated, check if they should be redirected
     if (isAuthenticated && user) {
       if (user.role === 'admin') {
-        if (typeof window !== 'undefined') {
+        // Admins should always go to admin dashboard (except on allowed routes)
+        if (!canViewPage && typeof window !== 'undefined') {
           window.location.href = '/admin';
         }
         return;
       } else if (user.role === 'partner') {
-        // Only redirect if partner is approved
-        if (user.partner?.status === 'approved') {
+        // Only redirect if partner is approved and not on allowed route
+        if (user.partner?.status === 'approved' && !canViewPage) {
           if (typeof window !== 'undefined') {
             window.location.href = '/partner';
           }
@@ -32,13 +49,16 @@ export function PublicRoute({ children }: PublicRouteProps) {
         }
         // If partner is not approved, they can still view public pages
       } else if (user.role === 'member') {
-        if (typeof window !== 'undefined') {
+        // Members can view offer pages and public pages
+        // Only redirect to dashboard if they're on a non-allowed route
+        // This allows members to browse offers even when logged in
+        if (!canViewPage && typeof window !== 'undefined') {
           window.location.href = '/member';
         }
         return;
       }
     }
-  }, [user, loading, isAuthenticated, router]);
+  }, [user, loading, isAuthenticated, router, pathname]);
 
   if (loading) {
     return (
@@ -51,16 +71,32 @@ export function PublicRoute({ children }: PublicRouteProps) {
     );
   }
 
-  // If authenticated, don't render public content (redirect will happen)
+  // If authenticated, check if we should block rendering
   if (isAuthenticated && user) {
-    // For partners, only block if approved (pending partners can view public pages)
-    if (user.role === 'partner' && user.partner?.status === 'approved') {
+    // Define routes that authenticated users can access
+    const allowedRoutesForMembers = [
+      '/',
+      '/offers',
+      '/about',
+      '/contact',
+    ];
+    
+    const isOfferDetailPage = pathname?.startsWith('/offers/');
+    const isAllowedRoute = pathname && allowedRoutesForMembers.some(route => 
+      route === '/' ? pathname === '/' : pathname.startsWith(route)
+    );
+    const canViewPage = isOfferDetailPage || isAllowedRoute;
+
+    // For partners, only block if approved and not on allowed route
+    if (user.role === 'partner' && user.partner?.status === 'approved' && !canViewPage) {
       return null;
     }
-    // For admin and member, always block
-    if (user.role === 'admin' || user.role === 'member') {
+    // For admin, block if not on allowed route
+    if (user.role === 'admin' && !canViewPage) {
       return null;
     }
+    // For members, allow viewing offer pages and public pages
+    // Don't block members from viewing offers
   }
 
   return <>{children}</>;

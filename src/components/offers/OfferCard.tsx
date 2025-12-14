@@ -27,12 +27,29 @@ export function OfferCard({ offer }: OfferCardProps) {
   const isExpired = daysUntilExpiry < 0;
   const expiresSoon = daysUntilExpiry <= 5 && daysUntilExpiry >= 0;
 
-  const handleRedirectToLogin = (e: React.MouseEvent) => {
+  const handleRedirectToLogin = (e: React.MouseEvent, action?: 'call' | 'save') => {
     e.preventDefault();
     e.stopPropagation();
-    const url = new URL(window.location.href);
-    url.searchParams.set('login', 'true');
-    router.push(url.pathname + url.search);
+    // Build returnTo URL pointing to the offer detail page with action parameter
+    const offerDetailPath = `/offers/${offer._id}`;
+    const returnToUrl = new URL(offerDetailPath, window.location.origin);
+    if (action) {
+      returnToUrl.searchParams.set('action', action);
+    }
+    
+    // Build the returnTo value (pathname + search params)
+    const returnToValue = returnToUrl.pathname + returnToUrl.search;
+    
+    console.log('[OfferCard] handleRedirectToLogin - action:', action, 'returnToValue:', returnToValue);
+    
+    // Redirect to current page with login=true and returnTo parameter
+    // searchParams.set() will automatically encode the value
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('login', 'true');
+    currentUrl.searchParams.set('returnTo', returnToValue);
+    
+    console.log('[OfferCard] Redirecting to:', currentUrl.pathname + currentUrl.search);
+    router.push(currentUrl.pathname + currentUrl.search);
   };
 
   return (
@@ -72,7 +89,7 @@ export function OfferCard({ offer }: OfferCardProps) {
           variant="ghost"
           size="icon"
           className="absolute top-2 left-2 h-8 w-8 bg-background/80 hover:bg-background"
-          onClick={handleRedirectToLogin}
+          onClick={(e) => handleRedirectToLogin(e, 'save')}
           title="Save Offer"
         >
           <Heart className="h-4 w-4" />
@@ -84,7 +101,7 @@ export function OfferCard({ offer }: OfferCardProps) {
             variant="ghost"
             size="icon"
             className="absolute top-2 left-12 h-8 w-8 bg-background/80 hover:bg-background"
-            onClick={handleRedirectToLogin}
+            onClick={(e) => handleRedirectToLogin(e, 'call')}
             title="Call Partner"
           >
             <Phone className="h-4 w-4" />
