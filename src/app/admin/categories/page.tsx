@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { partnerOfferService } from '@/services/offer.service';
+import { partnerOfferService, getCategories } from '@/services/offer.service';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Plus, Trash2, RefreshCw } from 'lucide-react';
@@ -52,7 +52,7 @@ export default function AdminCategoriesPage() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await partnerOfferService.getCategories();
+      const response = await getCategories();
       if (response.success) {
         setCategories(response.data.categories.sort());
       } else {

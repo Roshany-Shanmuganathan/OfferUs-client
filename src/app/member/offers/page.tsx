@@ -4,7 +4,7 @@ import { MemberLayout } from '@/components/layout/MemberLayout';
 import { OfferCard } from '@/components/member/OfferCard';
 import { browseOffers } from '@/services/offer.service';
 import { savedOfferService } from '@/services/savedOffer.service';
-import { partnerOfferService } from '@/services/offer.service';
+import { partnerOfferService, getCategories } from '@/services/offer.service';
 import { useSavedOffers } from '@/contexts/SavedOffersContext';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -81,7 +81,7 @@ export default function BrowseOffersPage() {
     // Fetch categories
     const fetchCategories = async () => {
       try {
-        const response = await partnerOfferService.getCategories();
+        const response = await getCategories();
         if (response.success) {
           setCategories(response.data.categories || []);
         }

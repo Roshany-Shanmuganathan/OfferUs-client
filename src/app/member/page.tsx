@@ -1,35 +1,35 @@
-'use client';
+"use client";
 
-import { MemberLayout } from '@/components/layout/MemberLayout';
-import { OfferCard } from '@/components/member/OfferCard';
-import { browseOffers } from '@/services/offer.service';
-import { savedOfferService } from '@/services/savedOffer.service';
-import { partnerOfferService } from '@/services/offer.service';
-import { useSavedOffers } from '@/contexts/SavedOffersContext';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
+import { MemberLayout } from "@/components/layout/MemberLayout";
+import { OfferCard } from "@/components/member/OfferCard";
+import { browseOffers } from "@/services/offer.service";
+import { savedOfferService } from "@/services/savedOffer.service";
+import { partnerOfferService, getCategories } from "@/services/offer.service";
+import { useSavedOffers } from "@/contexts/SavedOffersContext";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Search, MapPin } from 'lucide-react';
-import type { Offer } from '@/types';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Search, MapPin } from "lucide-react";
+import type { Offer } from "@/types";
 
 export default function MemberDashboard() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [savedOfferIds, setSavedOfferIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<string>('all');
-  const [district, setDistrict] = useState<string>('all');
-  const [location, setLocation] = useState<string>('');
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<string>("all");
+  const [district, setDistrict] = useState<string>("all");
+  const [location, setLocation] = useState<string>("");
   const [categories, setCategories] = useState<string[]>([]);
   const { refreshCount } = useSavedOffers();
 
@@ -38,8 +38,8 @@ export default function MemberDashboard() {
       setLoading(true);
       const params: any = {};
       if (search) params.search = search;
-      if (category && category !== 'all') params.category = category;
-      if (district && district !== 'all') params.district = district;
+      if (category && category !== "all") params.category = category;
+      if (district && district !== "all") params.district = district;
       if (location) params.location = location;
 
       const data = await browseOffers(params);
@@ -49,13 +49,16 @@ export default function MemberDashboard() {
       try {
         const savedResponse = await savedOfferService.getSavedOffers();
         if (savedResponse.success) {
-          setSavedOfferIds(new Set(savedResponse.data.offers.map((o) => o._id)));
+          setSavedOfferIds(new Set(savedResponse.data.offers.map(o => o._id)));
         }
       } catch (err) {
         // Ignore errors for saved offers
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to load offers';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to load offers";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -69,7 +72,7 @@ export default function MemberDashboard() {
   // Debounce location search
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (location || location === '') {
+      if (location || location === "") {
         fetchOffers();
       }
     }, 500);
@@ -81,7 +84,7 @@ export default function MemberDashboard() {
     // Fetch categories
     const fetchCategories = async () => {
       try {
-        const response = await partnerOfferService.getCategories();
+        const response = await getCategories();
         if (response.success) {
           setCategories(response.data.categories || []);
         }
@@ -94,35 +97,41 @@ export default function MemberDashboard() {
 
   const handleSave = async (offerId: string) => {
     try {
-      setSavingStates((prev) => ({ ...prev, [offerId]: true }));
+      setSavingStates(prev => ({ ...prev, [offerId]: true }));
       await savedOfferService.saveOffer(offerId);
-      setSavedOfferIds((prev) => new Set([...prev, offerId]));
+      setSavedOfferIds(prev => new Set([...prev, offerId]));
       refreshCount();
-      toast.success('Offer saved');
+      toast.success("Offer saved");
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to save offer';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to save offer";
       toast.error(errorMessage);
     } finally {
-      setSavingStates((prev) => ({ ...prev, [offerId]: false }));
+      setSavingStates(prev => ({ ...prev, [offerId]: false }));
     }
   };
 
   const handleUnsave = async (offerId: string) => {
     try {
-      setSavingStates((prev) => ({ ...prev, [offerId]: true }));
+      setSavingStates(prev => ({ ...prev, [offerId]: true }));
       await savedOfferService.removeSavedOffer(offerId);
-      setSavedOfferIds((prev) => {
+      setSavedOfferIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(offerId);
         return newSet;
       });
       refreshCount();
-      toast.success('Offer removed from saved list');
+      toast.success("Offer removed from saved list");
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to remove offer';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to remove offer";
       toast.error(errorMessage);
     } finally {
-      setSavingStates((prev) => ({ ...prev, [offerId]: false }));
+      setSavingStates(prev => ({ ...prev, [offerId]: false }));
     }
   };
 
@@ -134,104 +143,124 @@ export default function MemberDashboard() {
   return (
     <MemberLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Member Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Discover and manage your offers</p>
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Member Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+            Discover and manage your offers
+          </p>
         </div>
 
-        <div className="mb-6 flex flex-col md:flex-row gap-4">
-          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+        {/* Filters */}
+        <div className="mb-6 space-y-4">
+          {/* Search Row */}
+          <form onSubmit={handleSearch} className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search offers..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                onChange={e => setSearch(e.target.value)}
+                className="pl-10 h-11 bg-card"
               />
             </div>
-            <Button type="submit">Search</Button>
+            <Button type="submit" className="h-11 px-6">
+              Search
+            </Button>
           </form>
 
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Filter Row */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="w-full sm:w-48 h-11 bg-card">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <div className="relative w-full md:w-48">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search location..."
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="pl-10"
-            />
+            <div className="relative w-full sm:w-48">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search location..."
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                className="pl-10 h-11 bg-card"
+              />
+            </div>
+
+            <Select value={district} onValueChange={setDistrict}>
+              <SelectTrigger className="w-full sm:w-48 h-11 bg-card">
+                <SelectValue placeholder="District" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                <SelectItem value="all">All Districts</SelectItem>
+                <SelectItem value="Colombo">Colombo</SelectItem>
+                <SelectItem value="Gampaha">Gampaha</SelectItem>
+                <SelectItem value="Kalutara">Kalutara</SelectItem>
+                <SelectItem value="Kandy">Kandy</SelectItem>
+                <SelectItem value="Matale">Matale</SelectItem>
+                <SelectItem value="Nuwara Eliya">Nuwara Eliya</SelectItem>
+                <SelectItem value="Galle">Galle</SelectItem>
+                <SelectItem value="Matara">Matara</SelectItem>
+                <SelectItem value="Hambantota">Hambantota</SelectItem>
+                <SelectItem value="Jaffna">Jaffna</SelectItem>
+                <SelectItem value="Kilinochchi">Kilinochchi</SelectItem>
+                <SelectItem value="Mannar">Mannar</SelectItem>
+                <SelectItem value="Vavuniya">Vavuniya</SelectItem>
+                <SelectItem value="Mullaitivu">Mullaitivu</SelectItem>
+                <SelectItem value="Batticaloa">Batticaloa</SelectItem>
+                <SelectItem value="Ampara">Ampara</SelectItem>
+                <SelectItem value="Trincomalee">Trincomalee</SelectItem>
+                <SelectItem value="Kurunegala">Kurunegala</SelectItem>
+                <SelectItem value="Puttalam">Puttalam</SelectItem>
+                <SelectItem value="Anuradhapura">Anuradhapura</SelectItem>
+                <SelectItem value="Polonnaruwa">Polonnaruwa</SelectItem>
+                <SelectItem value="Badulla">Badulla</SelectItem>
+                <SelectItem value="Moneragala">Moneragala</SelectItem>
+                <SelectItem value="Ratnapura">Ratnapura</SelectItem>
+                <SelectItem value="Kegalle">Kegalle</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          <Select value={district} onValueChange={setDistrict}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="District" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Districts</SelectItem>
-              <SelectItem value="Colombo">Colombo</SelectItem>
-              <SelectItem value="Gampaha">Gampaha</SelectItem>
-              <SelectItem value="Kalutara">Kalutara</SelectItem>
-              <SelectItem value="Kandy">Kandy</SelectItem>
-              <SelectItem value="Matale">Matale</SelectItem>
-              <SelectItem value="Nuwara Eliya">Nuwara Eliya</SelectItem>
-              <SelectItem value="Galle">Galle</SelectItem>
-              <SelectItem value="Matara">Matara</SelectItem>
-              <SelectItem value="Hambantota">Hambantota</SelectItem>
-              <SelectItem value="Jaffna">Jaffna</SelectItem>
-              <SelectItem value="Kilinochchi">Kilinochchi</SelectItem>
-              <SelectItem value="Mannar">Mannar</SelectItem>
-              <SelectItem value="Vavuniya">Vavuniya</SelectItem>
-              <SelectItem value="Mullaitivu">Mullaitivu</SelectItem>
-              <SelectItem value="Batticaloa">Batticaloa</SelectItem>
-              <SelectItem value="Ampara">Ampara</SelectItem>
-              <SelectItem value="Trincomalee">Trincomalee</SelectItem>
-              <SelectItem value="Kurunegala">Kurunegala</SelectItem>
-              <SelectItem value="Puttalam">Puttalam</SelectItem>
-              <SelectItem value="Anuradhapura">Anuradhapura</SelectItem>
-              <SelectItem value="Polonnaruwa">Polonnaruwa</SelectItem>
-              <SelectItem value="Badulla">Badulla</SelectItem>
-              <SelectItem value="Moneragala">Moneragala</SelectItem>
-              <SelectItem value="Ratnapura">Ratnapura</SelectItem>
-              <SelectItem value="Kegalle">Kegalle</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         {loading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="border rounded-lg overflow-hidden">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div
+                key={i}
+                className="border rounded-xl overflow-hidden bg-card"
+              >
                 <Skeleton className="h-48 w-full" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
+                <div className="p-4 space-y-3">
+                  <Skeleton className="h-5 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-10 w-full" />
                 </div>
               </div>
             ))}
           </div>
         ) : offers.length === 0 ? (
-          <div className="text-center py-12 border rounded-lg">
-            <p className="text-muted-foreground">No offers found</p>
-            <p className="text-sm text-muted-foreground mt-2">Try adjusting your search or filters</p>
+          <div className="text-center py-16 sm:py-20 border rounded-xl bg-card">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground font-medium">No offers found</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Try adjusting your search or filters
+            </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {offers.map((offer) => (
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {offers.map(offer => (
               <OfferCard
                 key={offer._id}
                 offer={offer}

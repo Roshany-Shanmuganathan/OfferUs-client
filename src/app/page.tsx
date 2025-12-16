@@ -1,93 +1,65 @@
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
-import { PublicRoute } from '@/components/layout/PublicRoute';
-import { LoginTrigger } from '@/components/layout/LoginTrigger';
-import { OfferCard } from '@/components/offers/OfferCard';
-import { OfferFilters } from '@/components/offers/OfferFilters';
-import { Button } from '@/components/ui/button';
-import { fetchOffersServer, fetchCategoriesServer } from '@/services/offer.service';
-import Link from 'next/link';
-import { Suspense } from 'react';
+"use client";
 
-interface HomeProps {
-  searchParams: Promise<{
-    search?: string;
-    category?: string;
-    sortBy?: string;
-    page?: string;
-  }>;
-}
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { PublicRoute } from "@/components/layout/PublicRoute";
+import { LoginTrigger } from "@/components/layout/LoginTrigger";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Suspense } from "react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { HeroSection } from "@/components/home/HeroSection";
+import { CategoryBar } from "@/components/home/CategoryBar";
+import { LatestOffersGrid } from "@/components/home/LatestOffersGrid";
 
-export default async function Home({ searchParams }: HomeProps) {
-  const resolvedSearchParams = await searchParams;
-  const page = Number(resolvedSearchParams.page) || 1;
-  
-  const { offers } = await fetchOffersServer({
-    page,
-    limit: 10,
-    search: resolvedSearchParams.search,
-    category: resolvedSearchParams.category,
-    sortBy: resolvedSearchParams.sortBy,
-  });
-
-  // Fetch categories for the filter
-  let categories: string[] = [];
-  try {
-    categories = await fetchCategoriesServer();
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
-  }
-
+export default function HomeWrapper() {
   return (
     <PublicRoute>
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <Suspense fallback={null}>
-          <LoginTrigger />
-        </Suspense>
-        <main className="flex-1">
-          <div className=" mx-auto ">
-            <div className="mb-12 text-center bg-primary space-y-6 px-4 py-16">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-secondary">
-                Welcome to OfferUs
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Your trusted platform for discovering the best offers and deals
-                from verified partners.
-              </p>
-            </div>
+      <HomeContent />
+    </PublicRoute>
+  );
+}
 
-            <div className="mb-8">
-              <OfferFilters categories={categories} />
-            </div>
+function HomeContent() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      <Suspense fallback={null}>
+        <LoginTrigger />
+      </Suspense>
+      <main className="flex-1">
+        <HeroSection />
+        <CategoryBar />
+        
 
-            {offers.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
-                  {offers.map((offer) => (
-                    <OfferCard key={offer._id} offer={offer} />
-                  ))}
-                </div>
-
-                <div className="flex justify-center mb-5">
-                  <Link href="/offers">
-                    <Button size="lg" variant="default">
-                      Browse More
-                    </Button>
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">
-                  No offers found matching your criteria.
+        {/* Offers Section */}
+        <section className="py-12 sm:py-16 lg:py-20 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Section Header */}
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 sm:mb-8">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  Latest Gifts
+                </h2>
+                <p className="mt-1 sm:mt-2 text-muted-foreground text-sm sm:text-base">
+                  Handpicked deals just for you
                 </p>
               </div>
-            )}
+              <Link
+                href="/offers"
+                className="text-primary font-medium flex items-center gap-1 hover:gap-2 transition-all text-sm sm:text-base"
+              >
+                View all offers
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* Offers Grid */}
+            <LatestOffersGrid />
           </div>
-        </main>
-        <Footer />
-      </div>
-    </PublicRoute>
+        </section>
+      </main>
+      <Footer />
+    </div>
   );
 }

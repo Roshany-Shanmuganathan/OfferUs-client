@@ -2,7 +2,7 @@
 
 import { PartnerLayout } from '@/components/layout/PartnerLayout';
 import { OfferForm } from '@/components/partner/offers/OfferForm';
-import { partnerOfferService } from '@/services/offer.service';
+import { partnerOfferService, getCategories } from '@/services/offer.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -33,7 +33,7 @@ export default function EditOfferPage({ params }: EditOfferPageProps) {
         setLoading(true);
         const [offerResponse, categoriesResponse] = await Promise.all([
           partnerOfferService.getPartnerOffer(offerId),
-          partnerOfferService.getCategories(),
+          getCategories(),
         ]);
 
         if (offerResponse.success) {

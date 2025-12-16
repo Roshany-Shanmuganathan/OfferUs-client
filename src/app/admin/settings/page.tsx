@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { adminSettingsService } from '@/services/admin.settings.service';
 import { Loader2, Key, User, Shield, Building2, BarChart3, Tag, Settings2, ExternalLink, TrendingUp, Package, Users } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { partnerOfferService } from '@/services/offer.service';
+import { partnerOfferService, getCategories } from '@/services/offer.service';
 import { analyticsService } from '@/services/analytics.service';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +54,7 @@ export default function AdminSettingsPage() {
         setLoadingStats(true);
         
         // Fetch categories
-        const categoriesResponse = await partnerOfferService.getCategories();
+        const categoriesResponse = await getCategories();
         if (categoriesResponse.success) {
           const sortedCategories = categoriesResponse.data.categories.sort();
           setCategories(sortedCategories);

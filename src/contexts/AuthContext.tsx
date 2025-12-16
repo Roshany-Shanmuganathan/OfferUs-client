@@ -95,53 +95,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await authService.login({ email, password });
-      if (response.success) {
-        // Backend sets HTTP-only cookie automatically
-        // Store user data with partner/member info in cookie for middleware/role checks
-        // This is critical for middleware to check partner approval status
-        const userDataForCookie = {
-          ...response.data.user,
-          partner: response.data.partner,
-          member: response.data.member,
-        };
-        Cookies.set("user", JSON.stringify(userDataForCookie), { 
-          expires: 7,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production"
-        });
+    const attemptLogin = async (retryCount = 0): Promise<void> => {
+      try {
+        const response = await authService.login({ email, password });
+        if (response.success) {
+          // Backend sets HTTP-only cookie automatically
+          // Store user data with partner/member info in cookie for middleware/role checks
+          // This is critical for middleware to check partner approval status
+          const userDataForCookie = {
+            ...response.data.user,
+            partner: response.data.partner,
+            member: response.data.member,
+          };
+          Cookies.set("user", JSON.stringify(userDataForCookie), { 
+            expires: 7,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production"
+          });
 
-        setUser({
-          ...response.data.user,
-          partner: response.data.partner,
-          member: response.data.member,
-        });
+          setUser({
+            ...response.data.user,
+            partner: response.data.partner,
+            member: response.data.member,
+          });
 
-        // Redirect based on role - use window.location for immediate navigation
-        if (typeof window !== "undefined") {
-          if (response.data.user.role === "admin") {
-            window.location.href = "/admin";
-          } else if (response.data.user.role === "partner") {
-            window.location.href = "/partner";
-          } else if (response.data.user.role === "member") {
-            window.location.href = "/member";
-          } else {
-            window.location.href = "/";
+          // Redirect based on role - use window.location for immediate navigation
+          if (typeof window !== "undefined") {
+            if (response.data.user.role === "admin") {
+              window.location.href = "/admin";
+            } else if (response.data.user.role === "partner") {
+              window.location.href = "/partner";
+            } else if (response.data.user.role === "member") {
+              window.location.href = "/member";
+            } else {
+              window.location.href = "/";
+            }
           }
+        } else {
+          throw new Error(response.message || "Login failed");
         }
-      } else {
-        throw new Error(response.message || "Login failed");
+      } catch (error: unknown) {
+        // Check for Network Error (no response) and retry once
+        const apiError = error as ApiError;
+        if (!apiError.response && retryCount < 1) {
+          // Wait 1 second and retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return attemptLogin(retryCount + 1);
+        }
+
+        // Preserve the original error structure so components can access response.data
+        if (apiError.response) {
+          throw error; // Re-throw axios error to preserve response structure
+        }
+        const message = apiError.message || "Login failed";
+        throw new Error(message);
       }
-    } catch (error: unknown) {
-      // Preserve the original error structure so components can access response.data
-      const apiError = error as ApiError;
-      if (apiError.response) {
-        throw error; // Re-throw axios error to preserve response structure
-      }
-      const message = apiError.message || "Login failed";
-      throw new Error(message);
-    }
+    };
+
+    await attemptLogin();
   };
 
   const logout = async () => {

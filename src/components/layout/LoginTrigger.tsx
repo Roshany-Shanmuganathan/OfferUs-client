@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { LoginModal } from '@/components/auth/LoginModal';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 export function LoginTrigger() {
   const searchParams = useSearchParams();
@@ -22,12 +22,13 @@ export function LoginTrigger() {
   }, [searchParams, router]);
 
   return (
-    <LoginModal
+    <AuthModal
       open={loginOpen}
+      defaultView="login"
       onOpenChange={(open) => {
         setLoginOpen(open);
         if (!open) {
-          // Remove query parameter when modal closes
+          // Remove query parameter when modal closes (safety check)
           const url = new URL(window.location.href);
           url.searchParams.delete('login');
           router.replace(url.pathname + url.search);

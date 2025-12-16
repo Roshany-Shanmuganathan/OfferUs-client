@@ -39,11 +39,11 @@ import type { ApiError, PartnerRegisterRequest } from "@/types";
 // Extend schema locally to include terms agreement
 const formSchema = partnerRegisterBaseSchema
   .extend({
-    agreeToTerms: z.boolean().refine((val) => val === true, {
+    agreeToTerms: z.boolean().refine(val => val === true, {
       message: "You must agree to the terms and conditions",
     }),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
@@ -119,7 +119,7 @@ export default function PartnerRegisterPage() {
         Array.isArray(apiError.response.data.errors)
       ) {
         // Set field errors if API returns field-specific errors
-        apiError.response.data.errors.forEach((err) => {
+        apiError.response.data.errors.forEach(err => {
           if (err.field && err.message) {
             // Handle nested fields like location.street
             if (err.field.includes(".")) {
@@ -158,16 +158,16 @@ export default function PartnerRegisterPage() {
 
   return (
     <PublicRoute>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
 
         {/* Hero Header */}
-        <div className="bg-[#0B211D] text-white py-20 px-4 text-center">
+        <div className="bg-primary text-primary-foreground py-20 px-4 text-center">
           <div className="container mx-auto max-w-4xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               Become a Partner with Offers
             </h1>
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+            <p className="text-primary-foreground/80 text-lg max-w-2xl mx-auto">
               Join our platform to reach wider audience and offer your exclusive
               deals. Fill out the form below to get started.
             </p>
@@ -175,7 +175,7 @@ export default function PartnerRegisterPage() {
         </div>
 
         <main className="flex-1 container mx-auto px-4 pb-20 -mt-10 relative z-10">
-          <div className="bg-white rounded-lg shadow-xl p-8 max-w-5xl mx-auto border border-gray-100">
+          <div className="bg-card rounded-lg shadow-xl p-8 max-w-5xl mx-auto border">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -183,7 +183,7 @@ export default function PartnerRegisterPage() {
               >
                 {/* Section 1: Shop / Business Information */}
                 <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900">
+                  <h2 className="text-xl font-bold text-foreground">
                     Shop / Business Information
                   </h2>
 
@@ -199,7 +199,7 @@ export default function PartnerRegisterPage() {
                               placeholder="e.g., AGR textile."
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -218,7 +218,7 @@ export default function PartnerRegisterPage() {
                               placeholder="e.g., Textile / electronics"
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -238,7 +238,7 @@ export default function PartnerRegisterPage() {
                               placeholder="e.g., https://www.google.com/maps?q=..."
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -258,7 +258,7 @@ export default function PartnerRegisterPage() {
                                 placeholder="e.g., Vavuniya"
                                 {...field}
                                 disabled={isLoading}
-                                className="bg-gray-50"
+                                className="bg-muted"
                               />
                             </FormControl>
                             <FormMessage />
@@ -277,12 +277,12 @@ export default function PartnerRegisterPage() {
                               disabled={isLoading}
                             >
                               <FormControl>
-                                <SelectTrigger className="bg-gray-50">
+                                <SelectTrigger className="bg-muted">
                                   <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {SRI_LANKAN_DISTRICTS.map((district) => (
+                                {SRI_LANKAN_DISTRICTS.map(district => (
                                   <SelectItem key={district} value={district}>
                                     {district}
                                   </SelectItem>
@@ -306,7 +306,7 @@ export default function PartnerRegisterPage() {
                               placeholder="e.g., 2nd cross street"
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -326,7 +326,7 @@ export default function PartnerRegisterPage() {
                               maxLength={5}
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -338,7 +338,7 @@ export default function PartnerRegisterPage() {
 
                 {/* Section 2: Primary Contact Details */}
                 <div className="space-y-6 pt-4">
-                  <h2 className="text-xl font-bold text-gray-900">
+                  <h2 className="text-xl font-bold text-foreground">
                     Primary Contact Details
                   </h2>
 
@@ -354,7 +354,7 @@ export default function PartnerRegisterPage() {
                               placeholder="e.g., Roshany."
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -374,7 +374,7 @@ export default function PartnerRegisterPage() {
                               placeholder="e.g., shalu24@gmail.com"
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -393,7 +393,7 @@ export default function PartnerRegisterPage() {
                               placeholder="e.g., +94 75 598 4905"
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -404,8 +404,8 @@ export default function PartnerRegisterPage() {
                 </div>
 
                 {/* Section 3: Account Security */}
-                <div className="space-y-6 pt-4 border-t">
-                  <h2 className="text-xl font-bold text-gray-900">
+                <div className="space-y-6 pt-4 border-t border-border">
+                  <h2 className="text-xl font-bold text-foreground">
                     Account Security
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -421,7 +421,7 @@ export default function PartnerRegisterPage() {
                               placeholder="••••••••"
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -440,7 +440,7 @@ export default function PartnerRegisterPage() {
                               placeholder="••••••••"
                               {...field}
                               disabled={isLoading}
-                              className="bg-gray-50"
+                              className="bg-muted"
                             />
                           </FormControl>
                           <FormMessage />
@@ -451,7 +451,7 @@ export default function PartnerRegisterPage() {
                 </div>
 
                 {/* Profile Image (Optional) */}
-                <div className="space-y-4 pt-4 border-t">
+                <div className="space-y-4 pt-4 border-t border-border">
                   <h3 className="font-semibold text-lg">
                     Profile Image (Optional)
                   </h3>
@@ -483,9 +483,9 @@ export default function PartnerRegisterPage() {
                       <FormControl>
                         <input
                           type="checkbox"
-                          className="h-4 w-4 rounded border-gray-300 accent-[#0B211D] focus:ring-[#0B211D] mt-1"
+                          className="h-4 w-4 rounded border-border accent-primary focus:ring-primary mt-1"
                           checked={field.value}
-                          onChange={(e) => field.onChange(e.target.checked)}
+                          onChange={e => field.onChange(e.target.checked)}
                           disabled={isLoading}
                         />
                       </FormControl>
@@ -513,7 +513,7 @@ export default function PartnerRegisterPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="w-48 bg-[#0B211D] hover:bg-[#153e34] text-white"
+                    className="w-48 bg-primary hover:bg-primary/90 text-primary-foreground"
                     disabled={isLoading}
                   >
                     {isLoading ? "Submitting..." : "Submit Application"}
@@ -525,22 +525,19 @@ export default function PartnerRegisterPage() {
 
           {/* Need More Help Section */}
           <div className="mt-20 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">
+            <h2 className="text-2xl font-bold mb-4 text-foreground">
               Need More Help?
             </h2>
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
               Explore our comprehensive FAQ section for instant answer to common
               question or visit our Help Center for detailed guides and
               tutorials.
             </p>
             <div className="flex justify-center gap-4">
-              <Button
-                variant="outline"
-                className="min-w-[140px] border-gray-300"
-              >
+              <Button variant="outline" className="min-w-[140px] border-border">
                 Visit FAQ
               </Button>
-              <Button className="min-w-[180px] bg-[#0B211D] hover:bg-[#153e34] text-white">
+              <Button className="min-w-[180px] bg-primary hover:bg-primary/90 text-primary-foreground">
                 Explore Help Center
               </Button>
             </div>

@@ -48,9 +48,14 @@ export const fetchOffersServer = async (options: {
   district?: string;
   location?: string;
   sortBy?: string;
-} = {}): Promise<{ offers: Offer[]; pagination: any }> => {
+  minPrice?: string;
+  maxPrice?: string;
+  minDiscount?: string;
+  maxDiscount?: string;
+  expiresBefore?: string;
+} = {}): Promise<{ offers: Offer[]; pagination: any; facets?: any }> => {
   try {
-    const { page = 1, limit = 10, search, category, district, location, sortBy } = options;
+    const { page = 1, limit = 10, search, category, district, location, sortBy, minPrice, maxPrice, minDiscount, maxDiscount, expiresBefore } = options;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
     
     const params = new URLSearchParams();
@@ -61,6 +66,11 @@ export const fetchOffersServer = async (options: {
     if (district && district !== 'all') params.append('district', district);
     if (location) params.append('location', location);
     if (sortBy) params.append('sortBy', sortBy);
+    if (minPrice) params.append('minPrice', minPrice);
+    if (maxPrice) params.append('maxPrice', maxPrice);
+    if (minDiscount) params.append('minDiscount', minDiscount);
+    if (maxDiscount) params.append('maxDiscount', maxDiscount);
+    if (expiresBefore) params.append('expiresBefore', expiresBefore);
 
     const url = `${baseUrl}/offers?${params.toString()}`;
     console.log('[fetchOffersServer] Fetching from:', url);
@@ -85,7 +95,8 @@ export const fetchOffersServer = async (options: {
     const data: ApiResponse<OfferBrowseResponse> = JSON.parse(text);
     return {
       offers: data.data.offers,
-      pagination: data.data.pagination
+      pagination: data.data.pagination,
+      facets: data.data.facets
     };
   } catch (error) {
     console.error('[fetchOffersServer] Error:', error);
@@ -169,6 +180,14 @@ export const fetchCategoriesServer = async (): Promise<string[]> => {
   }
 };
 
+// Standalone categories fetch (public)
+export const getCategories = async (): Promise<ApiResponse<{ categories: string[] }>> => {
+  const response = await apiClient.get<ApiResponse<{ categories: string[] }>>(
+    '/offers/categories'
+  );
+  return response.data;
+};
+
 export const partnerOfferService = {
   createOffer: async (data: {
     title: string;
@@ -223,12 +242,7 @@ export const partnerOfferService = {
     return response.data;
   },
 
-  getCategories: async (): Promise<ApiResponse<{ categories: string[] }>> => {
-    const response = await apiClient.get<ApiResponse<{ categories: string[] }>>(
-      '/offers/categories'
-    );
-    return response.data;
-  },
+  // getCategories is now available as a standalone import
 
   addCategory: async (name: string): Promise<ApiResponse<{ category: string }>> => {
     const response = await apiClient.post<ApiResponse<{ category: string }>>(

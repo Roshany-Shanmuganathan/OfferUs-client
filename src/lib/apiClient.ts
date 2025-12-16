@@ -36,8 +36,12 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear user cookie (not token - that's HTTP-only and handled by backend)
       Cookies.remove("user");
-      // Redirect to home with login modal trigger
-      if (typeof window !== "undefined") {
+      
+      // Don't redirect if the error came from checking auth status (getMe)
+      // This allows guests to view public pages without being redirected to login
+      const isCheckAuthRequest = error.config?.url?.includes("/auth/me");
+      
+      if (!isCheckAuthRequest && typeof window !== "undefined") {
         const currentPath = window.location.pathname;
         // Only redirect if not already on public routes
         if (!currentPath.startsWith("/offers") && currentPath !== "/") {

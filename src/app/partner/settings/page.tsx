@@ -10,7 +10,7 @@ import { SettingsLogoUploader } from '@/components/partner/settings/SettingsLogo
 import { SettingsProfileImageUploader } from '@/components/partner/settings/SettingsProfileImageUploader';
 import { DangerZoneSection } from '@/components/partner/settings/DangerZoneSection';
 import { partnerSettingsService } from '@/services/partner.settings.service';
-import { partnerOfferService } from '@/services/offer.service';
+import { partnerOfferService, getCategories } from '@/services/offer.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -31,7 +31,7 @@ export default function PartnerSettingsPage() {
       setLoading(true);
       const [profileResponse, categoriesResponse] = await Promise.all([
         partnerSettingsService.getPartnerProfile(),
-        partnerOfferService.getCategories(),
+        getCategories(),
       ]);
 
       if (profileResponse.success) {

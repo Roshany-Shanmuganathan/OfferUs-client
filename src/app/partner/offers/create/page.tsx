@@ -2,7 +2,7 @@
 
 import { PartnerLayout } from '@/components/layout/PartnerLayout';
 import { OfferForm } from '@/components/partner/offers/OfferForm';
-import { partnerOfferService } from '@/services/offer.service';
+import { partnerOfferService, getCategories } from '@/services/offer.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ export default function CreateOfferPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await partnerOfferService.getCategories();
+        const response = await getCategories();
         if (response.success) {
           setCategories(response.data.categories.sort());
         } else {

@@ -221,6 +221,9 @@ export interface Offer {
 export interface OfferBrowseResponse {
   offers: Offer[];
   isAuthenticated: boolean;
+  facets?: {
+    categories: Array<{ name: string; count: number }>;
+  };
   pagination: {
     page: number;
     limit: number;

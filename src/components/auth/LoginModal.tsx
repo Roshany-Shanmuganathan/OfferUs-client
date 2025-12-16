@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,17 +17,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { loginSchema, type LoginFormData } from '@/lib/validations';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import type { ApiError } from '@/types';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { loginSchema, type LoginFormData } from "@/lib/validations";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import type { ApiError } from "@/types";
 
-import Image from 'next/image';
+import Image from "next/image";
 
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from "lucide-react";
 
 interface LoginModalProps {
   open: boolean;
@@ -35,7 +35,11 @@ interface LoginModalProps {
   onSignupClick?: () => void;
 }
 
-export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProps) {
+export function LoginModal({
+  open,
+  onOpenChange,
+  onSignupClick,
+}: LoginModalProps) {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +47,8 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -52,17 +56,22 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
     setIsLoading(true);
     try {
       await login(data.email, data.password);
-      toast.success('Login successful!');
+      toast.success("Login successful!");
       form.reset();
       onOpenChange(false);
     } catch (error: unknown) {
       // Handle field-specific errors from API
       const apiError = error as ApiError;
-      if (apiError.response?.data?.errors && Array.isArray(apiError.response.data.errors)) {
+      if (
+        apiError.response?.data?.errors &&
+        Array.isArray(apiError.response.data.errors)
+      ) {
         // Set field errors if API returns field-specific errors
-        apiError.response.data.errors.forEach((err) => {
+        apiError.response.data.errors.forEach(err => {
           if (err.field && err.message) {
-            form.setError(err.field as keyof LoginFormData, { message: err.message });
+            form.setError(err.field as keyof LoginFormData, {
+              message: err.message,
+            });
           }
         });
         // Only show toast if there's a general message
@@ -71,9 +80,12 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
         }
       } else {
         // Only show toast for general errors, not field-specific ones
-        const errorMessage = apiError.response?.data?.message || apiError.message;
-        if (errorMessage && !errorMessage.includes('validation')) {
-          toast.error(errorMessage || 'Login failed. Please check your credentials.');
+        const errorMessage =
+          apiError.response?.data?.message || apiError.message;
+        if (errorMessage && !errorMessage.includes("validation")) {
+          toast.error(
+            errorMessage || "Login failed. Please check your credentials."
+          );
         }
       }
     } finally {
@@ -83,48 +95,53 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[850px] p-0 overflow-hidden bg-[#F4F4F5]">
+      <DialogContent className="sm:max-w-[850px] p-0 overflow-hidden bg-background">
         <div className="grid md:grid-cols-2 gap-0">
-
-
-
           {/* Left Side - Branding */}
-          <div className="hidden md:flex flex-col items-center justify-center bg-[#102219] text-white p-10 relative">
+          <div className="hidden md:flex flex-col items-center justify-center bg-primary text-primary-foreground p-10 relative">
             <div className="flex flex-col items-center justify-center flex-1 space-y-8">
               <div className="text-center">
                 <div className="relative w-48 h-32 lg:w-64 lg:h-40 mb-0`">
-                  <Image 
-                    src="/assets/logo-light.png" 
-                    alt="OfferUs Logo" 
+                  <Image
+                    src="/assets/logo-light.png"
+                    alt="OfferUs Logo"
                     fill
                     className="object-contain"
                     priority
                   />
                 </div>
               </div>
-              
+
               <div className="text-center space-y-1">
                 <h2 className="text-2xl font-medium">Welcome back.</h2>
-                <p className="text-base text-gray-400">Please sign in to your account</p>
+                <p className="text-base text-primary-foreground/70">
+                  Please sign in to your account
+                </p>
               </div>
 
               <div className="relative w-24 h-24 lg:w-28 lg:h-28 bg-[var(--color-gold)] [mask-image:url(/assets/login-offer-icon.png)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]">
-                 {/* Icon rendered via mask to apply color */}
+                {/* Icon rendered via mask to apply color */}
               </div>
             </div>
           </div>
 
           {/* Right Side - Form */}
-          <div className="p-8 md:p-12 bg-[#F4F4F5]">
+          <div className="p-8 md:p-12 bg-background">
             <DialogHeader className="mb-8 text-center md:text-left">
-              <DialogTitle className="text-4xl md:text-5xl font-extrabold text-center text-[#102219]">Sign in</DialogTitle>
+              <DialogTitle className="text-4xl md:text-5xl font-extrabold text-center text-foreground">
+                Sign in
+              </DialogTitle>
               <DialogDescription className="hidden">
                 Sign in to your account
               </DialogDescription>
             </DialogHeader>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+                noValidate
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -136,7 +153,7 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
                           placeholder="Enter email"
                           {...field}
                           disabled={isLoading}
-                          className="bg-gray-200/50 border-gray-300 text-black focus-visible:ring-1 focus-visible:ring-[#102219] h-12"
+                          className="bg-muted/50 border-border text-foreground focus-visible:ring-1 focus-visible:ring-primary h-12"
                           tabIndex={1}
                         />
                       </FormControl>
@@ -156,16 +173,20 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
                             placeholder="Enter password"
                             {...field}
                             disabled={isLoading}
-                            className="bg-gray-200/50 border-gray-300 text-black focus-visible:ring-1 focus-visible:ring-[#102219] h-12 pr-10"
+                            className="bg-muted/50 border-border text-foreground focus-visible:ring-1 focus-visible:ring-primary h-12 pr-10"
                             tabIndex={2}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                             tabIndex={-1}
                           >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
                           </button>
                         </div>
                       </FormControl>
@@ -174,48 +195,57 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
                   )}
                 />
 
-                <div className="flex items-center justify-between text-xs text-gray-600">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center space-x-2">
-                    <input 
-                      type="checkbox" 
-                      id="remember" 
-                      className="rounded border-gray-400 text-[#102219] focus:ring-[#102219] cursor-pointer"
+                    <input
+                      type="checkbox"
+                      id="remember"
+                      className="rounded border-border text-primary focus:ring-primary cursor-pointer"
                       tabIndex={3}
                     />
-                    <label htmlFor="remember" className="cursor-pointer">Remember me</label>
+                    <label htmlFor="remember" className="cursor-pointer">
+                      Remember me
+                    </label>
                   </div>
-                  <button type="button" className="hover:underline font-medium cursor-pointer" tabIndex={4}>
+                  <button
+                    type="button"
+                    className="hover:underline font-medium cursor-pointer"
+                    tabIndex={4}
+                  >
                     Forgot password?
                   </button>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-[#102219] hover:bg-[#1a3326] text-white h-12 text-base font-medium cursor-pointer" 
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-medium cursor-pointer"
                   disabled={isLoading}
                   tabIndex={5}
                 >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {isLoading ? "Signing in..." : "Sign in"}
                 </Button>
 
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-300" />
+                    <span className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-[#F4F4F5] px-2 text-gray-500 font-medium">
+                    <span className="bg-background px-2 text-muted-foreground font-medium">
                       OR
                     </span>
                   </div>
                 </div>
 
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white border-none h-12 flex items-center justify-center gap-2 cursor-pointer"
-                  onClick={() => toast.info('Google login not implemented yet')}
+                  onClick={() => toast.info("Google login not implemented yet")}
                   tabIndex={6}
                 >
-                   <svg className="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5 bg-white rounded-full p-0.5"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -236,18 +266,18 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
                   Continue with google
                 </Button>
 
-                <div className="text-center text-xs text-gray-600 mt-6">
-                  Don't have an account?{' '}
-                  <button 
-                    type="button" 
-                    className="font-bold text-black hover:underline cursor-pointer"
+                <div className="text-center text-xs text-muted-foreground mt-6">
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    className="font-bold text-foreground hover:underline cursor-pointer"
                     tabIndex={7}
                     onClick={() => {
                       if (onSignupClick) {
                         onSignupClick();
                       } else {
                         onOpenChange(false);
-                        toast.info('Please open the registration modal');
+                        toast.info("Please open the registration modal");
                       }
                     }}
                   >
@@ -262,4 +292,3 @@ export function LoginModal({ open, onOpenChange, onSignupClick }: LoginModalProp
     </Dialog>
   );
 }
-

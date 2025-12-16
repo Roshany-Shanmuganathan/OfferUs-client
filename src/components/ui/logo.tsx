@@ -8,9 +8,15 @@ interface LogoProps {
   className?: string;
   width?: number;
   height?: number;
+  variant?: "auto" | "light" | "dark";
 }
 
-export function Logo({ className, width = 120, height = 40 }: LogoProps) {
+export function Logo({
+  className,
+  width = 120,
+  height = 40,
+  variant = "auto",
+}: LogoProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -28,10 +34,20 @@ export function Logo({ className, width = 120, height = 40 }: LogoProps) {
     );
   }
 
-  // Dark background -> light logo
-  // Light background -> dark logo
-  const isDark = resolvedTheme === "dark";
-  const src = isDark ? "/assets/logo-light.png" : "/assets/logo-dark.png";
+  // Determine which logo to show based on variant
+  let src: string;
+  if (variant === "light") {
+    // Light logo for dark backgrounds
+    src = "/assets/logo-light.png";
+  } else if (variant === "dark") {
+    // Dark logo for light backgrounds
+    src = "/assets/logo-dark.png";
+  } else {
+    // Auto mode: based on theme
+    // Dark background -> light logo, Light background -> dark logo
+    const isDark = resolvedTheme === "dark";
+    src = isDark ? "/assets/logo-light.png" : "/assets/logo-dark.png";
+  }
 
   return (
     <Image
