@@ -7,6 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Heart, Phone, Clock, Percent } from "lucide-react";
 import type { Offer } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { savedOfferService } from "@/services/savedOffer.service";
+import { activityService } from "@/services/activity.service";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useSavedOffers } from "@/contexts/SavedOffersContext";
 
 function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
@@ -19,10 +25,17 @@ function formatDate(date: Date | string): string {
 
 interface OfferCardProps {
   offer: Offer;
+  isSaved?: boolean;
+  onSaveToggle?: () => void;
 }
 
-export function OfferCard({ offer }: OfferCardProps) {
+export function OfferCard({ offer, isSaved: initialSaved, onSaveToggle }: OfferCardProps) {
   const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
+  const { refreshCount } = useSavedOffers();
+  const [isSaved, setIsSaved] = useState(initialSaved || false);
+  const [isSaving, setIsSaving] = useState(false);
+  
   const expiryDate = new Date(offer.expiryDate);
   const today = new Date();
   const daysUntilExpiry = Math.ceil(
@@ -31,12 +44,74 @@ export function OfferCard({ offer }: OfferCardProps) {
   const isExpired = daysUntilExpiry < 0;
   const expiresSoon = daysUntilExpiry <= 5 && daysUntilExpiry >= 0;
 
-  const handleRedirectToLogin = (e: React.MouseEvent) => {
+  const handleSaveToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const url = new URL(window.location.href);
-    url.searchParams.set("login", "true");
-    router.push(url.pathname + url.search);
+
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("login", "true");
+      router.push(url.pathname + url.search);
+      return;
+    }
+
+    // Only members can save offers
+    if (user.role !== 'member') {
+      toast.error("Only members can save offers");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      
+      if (isSaved) {
+        await savedOfferService.removeSavedOffer(offer._id);
+        setIsSaved(false);
+        activityService.trackUnsave(offer);
+        toast.success("Offer removed from saved list");
+      } else {
+        await savedOfferService.saveOffer(offer._id);
+        setIsSaved(true);
+        activityService.trackSave(offer);
+        toast.success("Offer saved");
+      }
+      
+      refreshCount();
+      onSaveToggle?.();
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update saved offer";
+      toast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCallPartner = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("login", "true");
+      router.push(url.pathname + url.search);
+      return;
+    }
+
+    // Only members can call partners
+    if (user.role !== 'member') {
+      toast.error("Only members can contact partners");
+      return;
+    }
+
+    // If authenticated, make the call
+    if (typeof offer.partner === "object" && offer.partner?.contactInfo?.mobileNumber) {
+      window.location.href = `tel:${offer.partner.contactInfo.mobileNumber}`;
+    }
   };
 
   return (
@@ -90,11 +165,14 @@ export function OfferCard({ offer }: OfferCardProps) {
           <Button
             variant="secondary"
             size="icon"
-            className="h-9 w-9 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm"
-            onClick={handleRedirectToLogin}
-            title="Save Offer"
+            className={`h-9 w-9 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm ${
+              isSaved ? 'text-red-500' : ''
+            }`}
+            onClick={handleSaveToggle}
+            disabled={isSaving}
+            title={isSaved ? "Unsave Offer" : "Save Offer"}
           >
-            <Heart className="h-4 w-4 text-foreground" />
+            <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
           </Button>
 
           {typeof offer.partner === "object" &&
@@ -103,7 +181,7 @@ export function OfferCard({ offer }: OfferCardProps) {
                 variant="secondary"
                 size="icon"
                 className="h-9 w-9 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm"
-                onClick={handleRedirectToLogin}
+                onClick={handleCallPartner}
                 title="Call Partner"
               >
                 <Phone className="h-4 w-4 text-foreground" />

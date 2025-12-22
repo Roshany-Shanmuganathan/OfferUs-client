@@ -44,7 +44,7 @@ export function SavedOfferCard({
 
       <div className="flex flex-1 flex-col p-4">
         <h3 className="mb-2 line-clamp-2 text-lg font-semibold leading-tight hover:text-primary">
-          <Link href={`/member/offers/${offer._id}`}>{offer.title}</Link>
+          <Link href={`/offers/${offer._id}`}>{offer.title}</Link>
         </h3>
 
         <div className="mb-3 flex flex-wrap items-baseline gap-2">
@@ -73,7 +73,7 @@ export function SavedOfferCard({
         </div>
 
         <div className="mt-auto flex flex-col gap-2 sm:flex-row">
-          <Link href={`/member/offers/${offer._id}`} className="flex-1">
+          <Link href={`/offers/${offer._id}`} className="flex-1">
             <Button className="w-full" size="sm" variant="outline">
               View Details
             </Button>

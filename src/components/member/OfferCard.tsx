@@ -155,7 +155,7 @@ export function OfferCard({
         </div>
 
         {/* CTA Button */}
-        <Link href={`/member/offers/${offer._id}`} className="mt-auto">
+        <Link href={`/offers/${offer._id}`} className="mt-auto">
           <Button className="w-full h-10 font-medium" size="default">
             View Details
           </Button>

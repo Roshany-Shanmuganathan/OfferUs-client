@@ -32,6 +32,8 @@ const offerFormSchema = z
     expiryDate: z.string().min(1, 'Expiry date is required'),
     imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
     termsAndConditions: z.string().optional(),
+    couponColor: z.string().optional(),
+    couponExpiryDays: z.number().min(0, 'Coupon expiry days must be at least 0').optional().nullable(),
   })
   .refine(
     (data) => {
@@ -85,6 +87,8 @@ export function OfferForm({ offer, categories, onSuccess }: OfferFormProps) {
           expiryDate: new Date(offer.expiryDate).toISOString().slice(0, 16),
           imageUrl: offer.imageUrl || '',
           termsAndConditions: offer.termsAndConditions || '',
+          couponColor: offer.couponColor || '#c9a962',
+          couponExpiryDays: offer.couponExpiryDays ?? null,
         }
       : {
           title: '',
@@ -96,6 +100,8 @@ export function OfferForm({ offer, categories, onSuccess }: OfferFormProps) {
           expiryDate: '',
           imageUrl: '',
           termsAndConditions: '',
+          couponColor: '#c9a962',
+          couponExpiryDays: null,
         },
   });
 
@@ -163,6 +169,8 @@ export function OfferForm({ offer, categories, onSuccess }: OfferFormProps) {
         expiryDate: new Date(data.expiryDate).toISOString(),
         imageUrl: data.imageUrl || undefined,
         termsAndConditions: data.termsAndConditions || undefined,
+        couponColor: data.couponColor || '#c9a962',
+        couponExpiryDays: data.couponExpiryDays ?? undefined,
       };
 
       if (offer) {
@@ -384,6 +392,99 @@ export function OfferForm({ offer, categories, onSuccess }: OfferFormProps) {
             </FormItem>
           )}
         />
+
+        {/* Coupon Customization Section */}
+        <div className="border-t pt-6 mt-6">
+          <h3 className="text-lg font-semibold mb-2">Coupon Customization (Optional)</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Customize how coupons for this offer will appear and when they expire
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="couponColor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Coupon Color</FormLabel>
+                  <div className="space-y-2">
+                    <FormControl>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          {...field}
+                          className="h-10 w-20 cursor-pointer"
+                        />
+                        <Input
+                          type="text"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="#c9a962"
+                          className="flex-1 font-mono"
+                        />
+                      </div>
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Choose a color that matches your brand or offer theme
+                    </p>
+                    {/* Color Presets */}
+                    <div className="flex gap-2 flex-wrap">
+                      {[
+                        { name: 'Gold', value: '#c9a962' },
+                        { name: 'Blue', value: '#3b82f6' },
+                        { name: 'Green', value: '#10b981' },
+                        { name: 'Purple', value: '#8b5cf6' },
+                        { name: 'Red', value: '#ef4444' },
+                        { name: 'Orange', value: '#f97316' },
+                        { name: 'Pink', value: '#ec4899' },
+                        { name: 'Teal', value: '#14b8a6' },
+                      ].map((color) => (
+                        <button
+                          key={color.value}
+                          type="button"
+                          onClick={() => field.onChange(color.value)}
+                          className="w-8 h-8 rounded-full border-2 border-border hover:scale-110 transition-transform"
+                          style={{ backgroundColor: color.value }}
+                          title={color.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="couponExpiryDays"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Coupon Validity (Days)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="Leave empty to match offer expiry"
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? null : parseInt(e.target.value);
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    {field.value 
+                      ? `Coupons will expire ${field.value} days after generation`
+                      : 'Coupons will expire when the offer expires'}
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         <div className="flex gap-4">
           <Button type="submit" disabled={isLoading}>

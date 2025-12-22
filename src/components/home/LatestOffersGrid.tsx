@@ -3,13 +3,17 @@
 import { useEffect, useState } from "react";
 import { Offer } from "@/types";
 import { browseOffers } from "@/services/offer.service";
+import { savedOfferService } from "@/services/savedOffer.service";
 import { HorizontalOfferCard } from "@/components/offers/HorizontalOfferCard";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function LatestOffersGrid() {
+  const { user, isAuthenticated } = useAuth();
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [savedOfferIds, setSavedOfferIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,6 +23,18 @@ export function LatestOffersGrid() {
         // Fetch latest 8 offers sorted by creation date
         const response = await browseOffers({ limit: 8, sortBy: 'createdAt' });
         setOffers(response.offers);
+
+        // Fetch saved offers for authenticated members
+        if (isAuthenticated && user?.role === 'member') {
+          try {
+            const savedResponse = await savedOfferService.getSavedOffers();
+            if (savedResponse.success) {
+              setSavedOfferIds(new Set(savedResponse.data.offers.map(o => o._id)));
+            }
+          } catch (err) {
+            // Ignore errors for saved offers
+          }
+        }
       } catch (err) {
         console.error("Failed to fetch latest offers:", err);
         setError("Failed to load offers. Please try again later.");
@@ -28,7 +44,21 @@ export function LatestOffersGrid() {
     };
 
     fetchOffers();
-  }, []);
+  }, [isAuthenticated, user]);
+
+  const handleSaveToggle = async () => {
+    // Refetch saved offers after save/unsave
+    if (isAuthenticated && user?.role === 'member') {
+      try {
+        const savedResponse = await savedOfferService.getSavedOffers();
+        if (savedResponse.success) {
+          setSavedOfferIds(new Set(savedResponse.data.offers.map(o => o._id)));
+        }
+      } catch (err) {
+        // Ignore errors
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -89,7 +119,12 @@ export function LatestOffersGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {offers.map((offer) => (
-        <HorizontalOfferCard key={offer._id} offer={offer} />
+        <HorizontalOfferCard 
+          key={offer._id} 
+          offer={offer}
+          isSaved={savedOfferIds.has(offer._id)}
+          onSaveToggle={handleSaveToggle}
+        />
       ))}
     </div>
   );
