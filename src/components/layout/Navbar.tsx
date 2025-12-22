@@ -95,9 +95,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
-    ...(!user || user.role !== "member"
-      ? [{ href: "/offers", label: "Offers", icon: Tag }]
-      : []),
+    { href: "/offers", label: "Offers", icon: Tag },
     { href: "/about", label: "About", icon: Info },
     { href: "/contact", label: "Contact", icon: Phone },
   ];

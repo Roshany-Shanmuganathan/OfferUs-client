@@ -20,6 +20,7 @@ export function middleware(request: NextRequest) {
 
   // 1. Role-based Redirects from Home
   // If partner or admin logs in, don't allow to view public page (home), redirect to dashboard
+  // Members are allowed to access public pages
   if (pathname === "/" && user) {
     if (user.role === "admin") {
       return NextResponse.redirect(new URL("/admin", request.url));
@@ -27,6 +28,7 @@ export function middleware(request: NextRequest) {
     if (user.role === "partner") {
       return NextResponse.redirect(new URL("/partner", request.url));
     }
+    // Members can access public pages including home
   }
 
   // 2. Define Protected Routes Logic

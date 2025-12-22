@@ -216,14 +216,13 @@ export interface Offer {
   createdAt: string;
   updatedAt: string;
   isSaved?: boolean;
+  couponColor?: string;
+  couponExpiryDays?: number | null;
 }
 
 export interface OfferBrowseResponse {
   offers: Offer[];
   isAuthenticated: boolean;
-  facets?: {
-    categories: Array<{ name: string; count: number }>;
-  };
   pagination: {
     page: number;
     limit: number;
@@ -236,6 +235,43 @@ export interface OfferResponse {
   offer: Offer;
   isAuthenticated: boolean;
 }
+
+// ============================================================================
+// Coupon Types
+// ============================================================================
+
+export interface Coupon {
+  _id: string;
+  couponCode: string;
+  member: string | User;
+  partner: string | Partner;
+  offer: string | Offer;
+  status: 'ACTIVE' | 'REDEEMED' | 'EXPIRED';
+  qrToken: string;
+  qrCodeDataUrl?: string;
+  couponColor: string;
+  expiryDate: string;
+  redeemedAt?: string;
+  redeemedBy?: string | User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CouponResponse {
+  coupon: Coupon;
+}
+
+export interface CouponsResponse {
+  coupons: Coupon[];
+  count: number;
+}
+
+export interface CouponValidationResponse {
+  valid: boolean;
+  message: string;
+  coupon?: Coupon;
+}
+
 
 // ============================================================================
 // Review Types
