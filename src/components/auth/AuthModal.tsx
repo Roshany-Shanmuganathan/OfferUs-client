@@ -15,12 +15,14 @@ interface AuthModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultView?: "login" | "register";
+  redirectUrl?: string;
 }
 
 export function AuthModal({
   open,
   onOpenChange,
   defaultView = "login",
+  redirectUrl,
 }: AuthModalProps) {
   const [view, setView] = useState<"login" | "register">(defaultView);
 
@@ -85,11 +87,13 @@ export function AuthModal({
                 <LoginForm 
                     onSuccess={handleClose} 
                     onSignupClick={() => setView("register")} 
+                    redirectUrl={redirectUrl}
                 />
              ) : (
                 <RegisterForm 
                     onSuccess={handleClose} 
                     onLoginClick={() => setView("login")} 
+                    redirectUrl={redirectUrl}
                 />
              )}
 

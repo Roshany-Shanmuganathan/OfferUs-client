@@ -36,8 +36,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Offer, Review } from '@/types';
-import { LoginTrigger } from '@/components/layout/LoginTrigger';
-import { Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSavedOffers } from '@/contexts/SavedOffersContext';
 import { CouponModal } from '@/components/member/CouponModal';
@@ -262,9 +260,6 @@ export default function OfferDetailsPage() {
     <PublicRoute>
       <div className="flex min-h-screen flex-col">
         <Navbar />
-        <Suspense fallback={null}>
-          <LoginTrigger />
-        </Suspense>
         <div className="bg-background min-h-screen pb-12">
           {/* Breadcrumb / Back Navigation */}
           <div className="bg-secondary/30 border-b border-border/50">

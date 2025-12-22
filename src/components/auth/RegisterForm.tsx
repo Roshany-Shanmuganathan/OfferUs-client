@@ -24,9 +24,10 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 interface RegisterFormProps {
   onSuccess: () => void;
   onLoginClick: () => void;
+  redirectUrl?: string;
 }
 
-export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
+export function RegisterForm({ onSuccess, onLoginClick, redirectUrl }: RegisterFormProps) {
   const { registerMember } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -52,7 +53,7 @@ export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
     setIsLoading(true);
     try {
       const { confirmPassword, ...registerData } = data;
-      await registerMember(registerData);
+      await registerMember(registerData, redirectUrl);
       toast.success("Registration successful! Welcome!");
       form.reset();
       onSuccess();

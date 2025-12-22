@@ -42,6 +42,8 @@ import { MemberNotificationBell } from "@/components/member/MemberNotificationBe
 import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { NavSearchBar } from "./NavSearchBar";
+import { LoginTrigger } from "./LoginTrigger";
+import { Suspense } from "react";
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -107,6 +109,9 @@ export function Navbar() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <LoginTrigger />
+      </Suspense>
       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">

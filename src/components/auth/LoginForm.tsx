@@ -21,9 +21,10 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 interface LoginFormProps {
   onSuccess: () => void;
   onSignupClick: () => void;
+  redirectUrl?: string;
 }
 
-export function LoginForm({ onSuccess, onSignupClick }: LoginFormProps) {
+export function LoginForm({ onSuccess, onSignupClick, redirectUrl }: LoginFormProps) {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +40,7 @@ export function LoginForm({ onSuccess, onSignupClick }: LoginFormProps) {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      await login(data.email, data.password, redirectUrl);
       toast.success("Login successful!");
       form.reset();
       onSuccess();

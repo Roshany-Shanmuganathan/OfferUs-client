@@ -23,9 +23,9 @@ import { authService } from "@/services/auth.service";
 interface AuthContextType {
   user: UserWithDetails | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, redirectUrl?: string) => Promise<void>;
   logout: () => Promise<void>;
-  registerMember: (data: MemberRegisterRequest) => Promise<void>;
+  registerMember: (data: MemberRegisterRequest, redirectUrl?: string) => Promise<void>;
   registerPartner: (data: PartnerRegisterRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, redirectUrl?: string) => {
     const attemptLogin = async (retryCount = 0): Promise<void> => {
       try {
         const response = await authService.login({ email, password });
@@ -119,9 +119,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             member: response.data.member,
           });
 
-          // Redirect based on role - use window.location for immediate navigation
+          // Redirect based on role or provided redirectUrl
           if (typeof window !== "undefined") {
-            if (response.data.user.role === "admin") {
+            if (redirectUrl) {
+              window.location.href = redirectUrl;
+            } else if (response.data.user.role === "admin") {
               window.location.href = "/admin";
             } else if (response.data.user.role === "partner") {
               window.location.href = "/partner";
@@ -169,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerMember = async (data: MemberRegisterRequest) => {
+  const registerMember = async (data: MemberRegisterRequest, redirectUrl?: string) => {
     try {
       const response = await authService.registerMember(data);
       if (response.success) {
@@ -189,7 +191,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Auto-login after member registration
         if (typeof window !== "undefined") {
-          window.location.href = "/member";
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+          } else {
+            window.location.href = "/member";
+          }
         }
       } else {
         throw new Error(response.message || "Registration failed");

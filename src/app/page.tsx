@@ -3,14 +3,11 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PublicRoute } from "@/components/layout/PublicRoute";
-import { LoginTrigger } from "@/components/layout/LoginTrigger";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Suspense } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CategoryBar } from "@/components/home/CategoryBar";
 import { LatestOffersGrid } from "@/components/home/LatestOffersGrid";
+import Link from "next/link"; // Added Link import
 
 export default function HomeWrapper() {
   return (
@@ -24,9 +21,6 @@ function HomeContent() {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
-      <Suspense fallback={null}>
-        <LoginTrigger />
-      </Suspense>
       <main className="flex-1">
         <HeroSection />
         <CategoryBar />

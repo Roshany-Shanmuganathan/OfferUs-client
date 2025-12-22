@@ -9,11 +9,17 @@ export function LoginTrigger() {
   const router = useRouter();
   const [loginOpen, setLoginOpen] = useState(false);
 
+  const [redirectUrl, setRedirectUrl] = useState<string | undefined>(undefined);
+
   useEffect(() => {
     // Check if login query parameter is present
     const shouldOpenLogin = searchParams.get('login') === 'true';
     if (shouldOpenLogin) {
+      // Set the current place as redirect URL before clearing params
+      const currentPath = window.location.pathname + window.location.search.replace(/[?&]login=true/, '').replace(/^\?$/, '');
+      setRedirectUrl(currentPath);
       setLoginOpen(true);
+      
       // Remove query parameter from URL
       const url = new URL(window.location.href);
       url.searchParams.delete('login');
@@ -25,6 +31,7 @@ export function LoginTrigger() {
     <AuthModal
       open={loginOpen}
       defaultView="login"
+      redirectUrl={redirectUrl}
       onOpenChange={(open) => {
         setLoginOpen(open);
         if (!open) {
