@@ -3,8 +3,8 @@ import Cookies from "js-cookie";
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
-  timeout: 10000,
-  withCredentials: true, // Required for cross-origin requests with cookies (HTTP-only cookies are sent automatically)
+  timeout: 30000, // Increased to 30s to handle Vercel cold starts and DB latency
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
