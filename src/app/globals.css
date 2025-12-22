@@ -53,6 +53,15 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes zoom-smooth {
+  0%, 100% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.animate-zoom-smooth {
+  animation: zoom-smooth 3s ease-in-out infinite;
+}
+
 :root {
   /* Brand Colors */
   --gold: #c9a962;

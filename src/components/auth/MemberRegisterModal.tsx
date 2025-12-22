@@ -288,8 +288,21 @@ export function MemberRegisterModal({
                 </p>
               </div>
 
-              <div className="relative w-24 h-24 lg:w-28 lg:h-28 bg-[var(--color-gold)] [mask-image:url(/assets/login-offer-icon.png)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]">
-                {/* Icon rendered via mask to apply color */}
+               {/* Animating Icon */}
+              <div className="relative w-24 h-24 lg:w-28 lg:h-28 mt-4 overflow-visible flex items-center justify-center">
+                 <div 
+                   className="w-full h-full bg-[var(--color-gold)] animate-zoom-smooth"
+                   style={{
+                     maskImage: 'url(/assets/login-offer-icon.png)',
+                     maskSize: 'contain',
+                     maskRepeat: 'no-repeat',
+                     maskPosition: 'center',
+                     WebkitMaskImage: 'url(/assets/login-offer-icon.png)',
+                     WebkitMaskSize: 'contain',
+                     WebkitMaskRepeat: 'no-repeat',
+                     WebkitMaskPosition: 'center',
+                   }}
+                 />
               </div>
             </div>
           </div>
