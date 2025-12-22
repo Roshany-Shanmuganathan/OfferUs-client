@@ -76,6 +76,12 @@ export interface Partner {
   };
   status: "pending" | "approved" | "rejected" | "banned";
   profileImage?: string;
+  subscription?: {
+    plan: "none" | "basic" | "standard" | "premium";
+    status: "unpaid" | "paid";
+    startDate?: string;
+    endDate?: string;
+  };
   createdAt: string;
 }
 

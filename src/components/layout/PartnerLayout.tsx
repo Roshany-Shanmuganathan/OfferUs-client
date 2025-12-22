@@ -34,8 +34,10 @@ import {
   User,
   Star,
   Menu,
+  Loader2,
+  CreditCard,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,12 +50,45 @@ import { Logo } from "@/components/ui/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { SubscriptionDialog } from "@/components/partner/SubscriptionDialog";
 
 export function PartnerLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+
+  useEffect(() => {
+    // Check if the user is a partner and doesn't have a paid subscription
+    if (user?.role === "partner" && user.partner) {
+      const hasPaidSubscription = user.partner.subscription?.status === "paid";
+      const isSubscriptionPage = pathname === "/partner/subscription";
+      
+      // Don't show on subscription page itself
+      if (!hasPaidSubscription && !isSubscriptionPage) {
+        // Check if we already showed it to avoid being too annoying
+        // Use localStorage to remember across refreshes and restarts
+        const dismissedAt = localStorage.getItem("subscription_dialog_dismissed_at");
+        
+        // Only show if never dismissed or dismissed more than 24 hours ago
+        const shouldShow = !dismissedAt || (Date.now() - parseInt(dismissedAt) > 24 * 60 * 60 * 1000);
+        
+        if (shouldShow) {
+          // Add a small delay for better UX
+          const timer = setTimeout(() => {
+            setShowSubscriptionDialog(true);
+          }, 2000);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, [user, pathname]);
+
+  const handleCloseDialog = () => {
+    setShowSubscriptionDialog(false);
+    localStorage.setItem("subscription_dialog_dismissed_at", Date.now().toString());
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -103,6 +138,11 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
       title: "Reviews",
       icon: Star,
       href: "/partner/reviews",
+    },
+    {
+      title: user?.partner?.subscription?.status === "paid" ? "Manage Subscription" : "Subscription",
+      icon: CreditCard,
+      href: "/partner/subscription",
     },
     {
       title: "Settings",
@@ -317,6 +357,10 @@ export function PartnerLayout({ children }: { children: React.ReactNode }) {
           </SidebarInset>
         </div>
       </SidebarProvider>
+      <SubscriptionDialog 
+        isOpen={showSubscriptionDialog} 
+        onClose={handleCloseDialog} 
+      />
     </ProtectedRoute>
   );
 }
