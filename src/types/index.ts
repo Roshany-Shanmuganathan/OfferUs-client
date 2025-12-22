@@ -229,6 +229,7 @@ export interface OfferBrowseResponse {
     total: number;
     pages: number;
   };
+  facets?: any;
 }
 
 export interface OfferResponse {

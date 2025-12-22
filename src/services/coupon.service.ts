@@ -99,7 +99,7 @@ export const getMemberStats = async (): Promise<{
   totalRedeemed: number;
   activeCoupons: number;
 }> => {
-  const response = await api.get('/coupons/member/stats');
+  const response = await apiClient.get('/coupons/member/stats');
   return response.data.data;
 };
 
